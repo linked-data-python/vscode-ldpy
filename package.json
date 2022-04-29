@@ -1,0 +1,26 @@
+{
+    "name": "linked-data-python",
+    "displayName": "Linked-Data Python",
+    "description": "This extension for Visual Studio Code enables the syntax highlighting for Linked-Data Python source files (extensions `.ldpy`).",
+    "version": "0.0.1",
+    "engines": {
+        "vscode": "^1.66.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [{
+            "id": "ldpy",
+            "aliases": ["Linked-Data Python", "ldpy"],
+            "extensions": [".ldpy"],
+            "configuration": "./language-configuration.json"
+        }],
+        "grammars": [{
+            "language": "ldpy",
+            "scopeName": "source.ldpy",
+            "path": "./syntaxes/ldpy.tmLanguage.json"
+        }
+        ]
+    }
+}
