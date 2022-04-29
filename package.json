@@ -2,6 +2,7 @@
     "name": "linked-data-python",
     "displayName": "Linked-Data Python",
     "description": "This extension for Visual Studio Code enables the syntax highlighting for Linked-Data Python source files (extensions `.ldpy`).",
+    "icon": "ldpyIcon.png",
     "version": "0.0.1",
     "engines": {
         "vscode": "^1.66.0"
