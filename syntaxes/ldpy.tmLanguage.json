@@ -271,6 +271,21 @@
 			"comment": "valid Python expressions w/o comments and line continuation",
 			"patterns": [
 				{
+					"include": "#graph-constructor"
+				},
+				{
+					"include": "#firi"
+				},
+				{
+					"include": "#fnode"
+				},
+				{
+					"include": "#sparql-var"
+				},
+				{
+					"include": "#rdf-literal-suffix"
+				},
+				{
 					"include": "#backticks"
 				},
 				{
@@ -281,12 +296,6 @@
 				},
 				{
 					"include": "#kw_a"
-				},
-				{
-					"include": "#iriref"
-				},
-				{
-					"include": "#pname"
 				},
 				{
 					"include": "#bnode"
@@ -307,10 +316,13 @@
 					"include": "#illegal-operator"
 				},
 				{
-					"include": "#operator"
+					"include": "#iriref"
 				},
 				{
-					"include": "#graph-constructor"
+					"include": "#pname"
+				},
+				{
+					"include": "#operator"
 				},
 				{
 					"include": "#curly-braces"
@@ -359,7 +371,8 @@
 				},
 				{
 					"include": "#line-continuation"
-				}			]
+				}
+			]
 		},
 		"expression-base": {
 			"comment": "valid Python expressions with comments and line continuation",
@@ -390,33 +403,47 @@
 				}
 			]
 		},
-		"kw_a":{
-				"name":		"constant.language.rdfs-type.spy",
-				"comment":	"The special triple predicate 'a'",
-				"match":    "\\sa\\s"
+		"kw_a": {
+			"name": "constant.language.rdfs-type.spy",
+			"comment": "The special triple predicate 'a'",
+			"match": "\\sa\\s"
 		},
 		"bnode": {
-			"name": 	"constant.other.blank-node.spy",
-			"comment": 	"Blank node . Don't bother trying to match the blank node label grammar exactly, just highlight anything up to a space",
-			"match": 	"(_:)([^\\s]+)",
+			"name": "constant.other.blank-node.spy",
+			"comment": "Blank node . Don't bother trying to match the blank node label grammar exactly, just highlight anything up to a space",
+			"match": "(_:)([^\\s]+)",
 			"captures": {
-				"1": { "name": "constant.language.blank-node.spy" },
-				"2": { "name": "entity.name.type.blank-node.spy" }
-			 }
+				"1": {
+					"name": "constant.language.blank-node.spy"
+				},
+				"2": {
+					"name": "entity.name.type.blank-node.spy"
+				}
+			}
 		},
 		"iriref": {
-			"name": 	"string.quoted.other.iriref.spy",
-			"comment": 	"URI. Best attempt to convert IRI_REF: http://www.w3.org/TR/rdf-sparql-query/#rIRI_REF",
-			"match": 	"<[^<>\"{}|^`\\]\\\\]*>"
+			"comment": "IRI <...> en contexte opérande (DESIGN_CHOICES/ldpy/002 R1)",
+			"match": "(?:^|(?<=[=+\\-*/%,;:!|&^~([{<])|(?<=\\breturn)|(?<=\\byield)|(?<=\\belse)|(?<=\\bin)|(?<=\\bis)|(?<=\\bnot)|(?<=\\band)|(?<=\\bor)|(?<=\\bif)|(?<=\\bawait))(\\s*)(<[^<>\"{}|^`\\\\\\s]*>)",
+			"captures": {
+				"2": {
+					"name": "string.quoted.other.iriref.ldpy"
+				}
+			}
 		},
 		"pname": {
-			"name": 	"constant.complex.turtle.spy",
-			"comment": 	"Prefix / prefixed URI. PN_CHARS_BASE is insane. http://www.w3.org/TR/rdf-sparql-query/#rPN_CHARS_BASE",
-			"match": 	"(\\w*:)([^\\s|/^*?+{}()]*)",
+			"comment": "Nom préfixé (approximation sans table des préfixes ; les semantic tokens du LSP affineront)",
+			"match": "(?:^|(?<=[=+\\-*/%,;:!|&^~([{<])|(?<=\\breturn)|(?<=\\byield)|(?<=\\belse)|(?<=\\bin)|(?<=\\bis)|(?<=\\bnot)|(?<=\\band)|(?<=\\bor)|(?<=\\bif)|(?<=\\bawait))(\\s*)([A-Za-z_]\\w*)(:)([A-Za-z_]\\w*(?:\\{[^}]*\\})?|\\{[^}]*\\})",
 			"captures": {
-				"1": { "name": "entity.name.type.pname.prefix.spy" },
-				"2": { "name": "entity.name.other.pname.local.spy" }
-			 }
+				"2": {
+					"name": "entity.name.type.pname.prefix.ldpy"
+				},
+				"3": {
+					"name": "punctuation.separator.pname.ldpy"
+				},
+				"4": {
+					"name": "entity.name.other.pname.local.ldpy"
+				}
+			}
 		},
 		"member-access": {
 			"name": "meta.member.access.spy",
@@ -471,21 +498,24 @@
 			"match": "(?x)\n  \\b\n    # we want to see \"enough\", meaning 2 or more upper-case\n    # letters in the beginning of the constant\n    #\n    # for more details refer to:\n    #   https://github.com/MagicStack/MagicPython/issues/42\n    (\n      _* [[:upper:]] [_\\d]* [[:upper:]]\n    )\n    [[:upper:]\\d]* (_\\w*)?\n  \\b\n"
 		},
 		"graph-constructor": {
-			"begin": "g\\{",
+			"begin": "\\b(g)(\\{)",
 			"end": "\\}",
 			"beginCaptures": {
-				"0": {
-					"name": "punctuation.definition.graph.begin.spy"
+				"1": {
+					"name": "storage.type.graph.ldpy"
+				},
+				"2": {
+					"name": "punctuation.definition.graph.begin.ldpy"
 				}
 			},
 			"endCaptures": {
 				"0": {
-					"name": "punctuation.definition.graph.end.spy"
+					"name": "punctuation.definition.graph.end.ldpy"
 				}
 			},
 			"patterns": [
 				{
-					"include": "#expression"
+					"include": "#graph-content"
 				}
 			]
 		},
@@ -5429,6 +5459,182 @@
 				{
 					"name": "storage.type.format.spy",
 					"match": "(\\w)"
+				}
+			]
+		},
+		"sparql-var": {
+			"match": "[?$][A-Za-z_]\\w*\\b",
+			"name": "variable.other.sparql.ldpy"
+		},
+		"fnode": {
+			"begin": "(\\bf|\\?)(\\{)",
+			"end": "\\}",
+			"beginCaptures": {
+				"1": {
+					"name": "storage.type.fnode.ldpy"
+				},
+				"2": {
+					"name": "punctuation.definition.fnode.begin.ldpy"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.fnode.end.ldpy"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#expression"
+				}
+			]
+		},
+		"firi": {
+			"begin": "\\bf(<)",
+			"end": ">",
+			"name": "string.interpolated.firi.ldpy",
+			"beginCaptures": {
+				"1": {
+					"name": "punctuation.definition.firi.begin.ldpy"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.firi.end.ldpy"
+				}
+			},
+			"patterns": [
+				{
+					"begin": "\\{",
+					"end": "\\}",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.section.interpolation.begin.ldpy"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.section.interpolation.end.ldpy"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#expression"
+						}
+					]
+				}
+			]
+		},
+		"rdf-literal-suffix": {
+			"patterns": [
+				{
+					"match": "(?<=[\"'])(@)([A-Za-z]+(?:-[A-Za-z0-9]+)*)",
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.langtag.ldpy"
+						},
+						"2": {
+							"name": "constant.other.langtag.ldpy"
+						}
+					}
+				},
+				{
+					"match": "(?<=[\"'])(\\^\\^)",
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.datatype.ldpy"
+						}
+					}
+				}
+			]
+		},
+		"graph-content": {
+			"patterns": [
+				{
+					"include": "#comments"
+				},
+				{
+					"match": "\\ba\\b",
+					"name": "keyword.other.rdf-type.ldpy"
+				},
+				{
+					"include": "#sparql-var"
+				},
+				{
+					"include": "#firi"
+				},
+				{
+					"include": "#fnode"
+				},
+				{
+					"begin": "\\{",
+					"end": "\\}",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.section.interpolation.begin.ldpy"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.section.interpolation.end.ldpy"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#expression"
+						}
+					],
+					"comment": "interpolation {expr} dans un graphe"
+				},
+				{
+					"match": "<[^<>\"{}|^`\\\\\\s]*>",
+					"name": "string.quoted.other.iriref.ldpy"
+				},
+				{
+					"match": "(_:)(\\w+)",
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.bnode.ldpy"
+						},
+						"2": {
+							"name": "entity.name.other.bnode.ldpy"
+						}
+					}
+				},
+				{
+					"match": "([A-Za-z_]\\w*)?(:)([A-Za-z0-9_][\\w.-]*)?",
+					"captures": {
+						"1": {
+							"name": "entity.name.type.pname.prefix.ldpy"
+						},
+						"2": {
+							"name": "punctuation.separator.pname.ldpy"
+						},
+						"3": {
+							"name": "entity.name.other.pname.local.ldpy"
+						}
+					}
+				},
+				{
+					"include": "#string"
+				},
+				{
+					"include": "#rdf-literal-suffix"
+				},
+				{
+					"match": "[+-]?\\d+(\\.\\d+)?([eE][+-]?\\d+)?",
+					"name": "constant.numeric.ldpy"
+				},
+				{
+					"match": "\\b(true|false|True|False)\\b",
+					"name": "constant.language.ldpy"
+				},
+				{
+					"match": "[;,.]",
+					"name": "punctuation.separator.triples.ldpy"
+				},
+				{
+					"match": "[\\[\\]()]",
+					"name": "punctuation.section.bnode.ldpy"
 				}
 			]
 		}

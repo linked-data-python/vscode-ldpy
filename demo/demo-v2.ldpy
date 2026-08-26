@@ -1,0 +1,43 @@
+# Démo de coloration v2 — chaque construction du langage, et les pièges.
+"""Docstring du module : <http://pas.un/iri> et g{ } ne doivent PAS être colorés ici."""
+
+@prefix ex:  <http://example.org/ontology#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@base <http://example.org/data/> .
+
+# --- îlots : DOIVENT être colorés ---
+iri_abs = <http://example.org/a>
+iri_rel = <hello>
+pn = ex:SomeClass
+pn_interp = ex:{capteur}
+v1 = ?var
+v2 = $autre
+lit1 = "hello"@en
+lit2 = "12"^^xsd:integer
+lit3 = f"salut { monde }"@fr
+fi = f<http://example.org/{ i * 2 }/suite/{ nom }>
+fn = f{ iri_abs if test else ex:World }
+qn = ?{ age + 1 }
+gr = g{ ex:{capteur} a ex:Sensor ;                # 'a' = rdf:type
+        ex:madeObservation [ ex:result {valeur} ;
+                             ex:unit ex:celsius ] ;
+        ex:tags ( 1 2.5 "trois"@fr true ) .
+        _:b ex:p ?x . <rel> ex:q ?{ calc() } }
+
+# --- Python pur : ne DOIT PAS être coloré comme un îlot ---
+cmp1 = a<b>c                    # comparaison chaînée, pas une IRI
+cmp2 = x < y
+sl = arr[i:j]                   # slice, pas un pname
+dc = {cle: valeur}              # dict, pas un pname
+mm = mat @ vec                  # matmul, pas un langtag
+dec = "a" @ en                  # matmul avec espaces
+s1 = 'g{ pas un graphe }'
+s2 = "@prefix pas: <une-declaration> ."
+
+@decorateur
+def f(x: int = 3) -> bool:      # annotations, pas des pnames
+    return x < 2
+
+@prefix
+def prefix_est_un_decorateur():
+    pass
