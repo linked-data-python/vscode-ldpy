@@ -1,28 +1,52 @@
 {
-    "name": "linked-data-python",
-    "displayName": "Linked-Data Python",
-    "description": "This extension for Visual Studio Code enables the syntax highlighting for Linked-Data Python source files (extensions `.ldpy`).",
-    "icon": "ldpyIcon.png",
-    "repository": "gitlab:coswot/vscode-ldpy",
-    "version": "0.0.1",
-    "engines": {
-        "vscode": "^1.66.0"
-    },
-    "categories": [
-        "Programming Languages"
-    ],
-    "contributes": {
-        "languages": [{
-            "id": "ldpy",
-            "aliases": ["Linked-Data Python", "ldpy"],
-            "extensions": [".ldpy"],
-            "configuration": "./language-configuration.json"
-        }],
-        "grammars": [{
-            "language": "ldpy",
-            "scopeName": "source.ldpy",
-            "path": "./syntaxes/ldpy.tmLanguage.json"
-        }
-        ]
-    }
+	"name": "linked-data-python",
+	"displayName": "Linked-Data Python",
+	"description": "This extension for Visual Studio Code enables the syntax highlighting for Linked-Data Python source files (extensions `.ldpy`).",
+	"icon": "ldpyIcon.png",
+	"repository": "gitlab:coswot/vscode-ldpy",
+	"publisher": "MaximeLefrancois",
+	"version": "0.0.2",
+	"main": "./out/extension.js",
+	"engines": {
+		"vscode": "^1.66.0"
+	},
+	"categories": [
+		"Programming Languages"
+	],
+	"contributes": {
+		"css": {
+			"customData": [ "./media/ldpy.css"	]
+		},
+		"languages": [
+			{
+				"id": "ldpy",
+				"aliases": [
+					"Linked-Data Python",
+					"ldpy"
+				],
+				"extensions": [
+					".ldpy"
+				],
+				"configuration": "./language-configuration.json",
+				"icon": {
+					"light": "./icons/rdf-file_icon-icons.com_71375.png",
+					"dark": "./icons/rdf-file_icon-icons.com_71375.png"
+				  }
+			}
+		],
+		"grammars": [
+			{
+				"language": "ldpy",
+				"scopeName": "source.ldpy",
+				"path": "./syntaxes/ldpy.tmLanguage.json"
+			}
+		],
+		"breakpoints": [{ "language": "ldpy" }]
+	},
+	"__metadata": {
+		"id": "b33e9145-6168-4a63-9488-6eda27a08b1e",
+		"publisherDisplayName": "Maxime Lefrançois",
+		"publisherId": "32ad1cac-5cad-4c32-91dd-3e46ee2c592d",
+		"isPreReleaseVersion": false
+	}
 }
