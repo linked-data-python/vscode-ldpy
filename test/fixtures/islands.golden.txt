@@ -1,0 +1,231 @@
+1:1 «@prefix» meta.directive.prefix.ldpy keyword.other.prefix.ldpy
+1:9 «sosa» meta.directive.prefix.ldpy entity.name.type.pname.prefix.ldpy
+1:13 «:» meta.directive.prefix.ldpy punctuation.separator.pname.ldpy
+1:15 «<http://www.w3.org/ns/sosa/>» meta.directive.prefix.ldpy string.quoted.other.iriref.ldpy
+1:44 «.» meta.directive.prefix.ldpy punctuation.terminator.directive.ldpy
+
+2:1 «@prefix» meta.directive.prefix.ldpy keyword.other.prefix.ldpy
+2:9 «:» meta.directive.prefix.ldpy punctuation.separator.pname.ldpy
+2:11 «<http://example.org/>» meta.directive.prefix.ldpy string.quoted.other.iriref.ldpy
+2:33 «.» meta.directive.prefix.ldpy punctuation.terminator.directive.ldpy
+
+3:1 «@base» meta.directive.base.ldpy keyword.other.base.ldpy
+3:7 «<http://example.org/>» meta.directive.base.ldpy string.quoted.other.iriref.ldpy
+3:29 «.» meta.directive.base.ldpy punctuation.terminator.directive.ldpy
+
+
+5:1 «t» -
+5:3 «=» keyword.operator.assignment.python
+5:5 «<http://example.org/x>» string.quoted.other.iriref.ldpy
+
+6:1 «u» -
+6:3 «=» keyword.operator.assignment.python
+6:5 «sosa» entity.name.type.pname.prefix.ldpy
+6:9 «:» punctuation.separator.pname.ldpy
+6:10 «Sensor» entity.name.other.pname.local.ldpy
+
+7:1 «b1» -
+7:4 «=» keyword.operator.assignment.python
+7:6 «_:» punctuation.definition.bnode.ldpy
+7:8 «station1» entity.name.other.bnode.ldpy
+
+8:1 «b2» -
+8:4 «=» keyword.operator.assignment.python
+8:6 «_:» punctuation.definition.bnode.ldpy
+8:8 «{u}» entity.name.other.bnode.ldpy
+
+9:1 «lit» -
+9:5 «=» keyword.operator.assignment.python
+9:7 «"» string.quoted.single.python punctuation.definition.string.begin.python
+9:8 «chat» string.quoted.single.python
+9:12 «"» string.quoted.single.python punctuation.definition.string.end.python
+9:13 «@» punctuation.definition.langtag.ldpy
+9:14 «fr» constant.other.langtag.ldpy
+
+10:1 «num» -
+10:5 «=» keyword.operator.assignment.python
+10:7 «"» string.quoted.single.python punctuation.definition.string.begin.python
+10:8 «5» string.quoted.single.python
+10:9 «"» string.quoted.single.python punctuation.definition.string.end.python
+10:10 «^^» punctuation.definition.datatype.ldpy
+10:12 «xsd» entity.name.type.pname.prefix.ldpy
+10:15 «:» punctuation.separator.pname.ldpy
+10:16 «integer» entity.name.other.pname.local.ldpy
+
+11:1 «iri2» -
+11:6 «=» keyword.operator.assignment.python
+11:8 «"» string.quoted.single.python punctuation.definition.string.begin.python
+11:9 «x» string.quoted.single.python
+11:10 «"» string.quoted.single.python punctuation.definition.string.end.python
+11:11 «^^» punctuation.definition.datatype.ldpy
+11:13 «<http://www.w3.org/2001/XMLSchema#string>» string.quoted.other.iriref.ldpy
+
+12:1 «gr» -
+12:4 «=» keyword.operator.assignment.python
+12:6 «g» storage.type.graph.ldpy
+12:7 «{» punctuation.definition.graph.begin.ldpy
+12:9 «f» storage.type.firi.ldpy
+12:10 «<» punctuation.definition.firi.begin.ldpy
+12:11 «http://example.org/sensor/» string.interpolated.firi.ldpy
+12:37 «{» string.interpolated.firi.ldpy punctuation.section.interpolation.begin.ldpy
+12:38 «t» string.interpolated.firi.ldpy
+12:39 «}» string.interpolated.firi.ldpy punctuation.section.interpolation.end.ldpy
+12:40 «>» punctuation.definition.firi.end.ldpy
+12:42 «a» keyword.other.rdf-type.ldpy
+12:44 «sosa» entity.name.type.pname.prefix.ldpy
+12:48 «:» punctuation.separator.pname.ldpy
+12:49 «Sensor» entity.name.other.pname.local.ldpy
+12:56 «;» punctuation.separator.triples.ldpy
+
+13:9 «sosa» entity.name.type.pname.prefix.ldpy
+13:13 «:» punctuation.separator.pname.ldpy
+13:14 «madeObservation» entity.name.other.pname.local.ldpy
+13:30 «[» punctuation.section.bnode.ldpy
+13:32 «sosa» entity.name.type.pname.prefix.ldpy
+13:36 «:» punctuation.separator.pname.ldpy
+13:37 «hasSimpleResult» entity.name.other.pname.local.ldpy
+13:53 «{» punctuation.section.interpolation.begin.ldpy
+13:54 «num» -
+13:57 «}» punctuation.section.interpolation.end.ldpy
+13:59 «]» punctuation.section.bnode.ldpy
+13:61 «;» punctuation.separator.triples.ldpy
+
+14:9 «:» punctuation.separator.pname.ldpy
+14:10 «p» entity.name.other.pname.local.ldpy
+14:12 «"» string.quoted.single.python punctuation.definition.string.begin.python
+14:13 «val» string.quoted.single.python
+14:16 «"» string.quoted.single.python punctuation.definition.string.end.python
+14:17 «@» punctuation.definition.langtag.ldpy
+14:18 «en» constant.other.langtag.ldpy
+14:20 «,» punctuation.separator.triples.ldpy
+14:22 «"» string.quoted.single.python punctuation.definition.string.begin.python
+14:23 «3» string.quoted.single.python
+14:24 «"» string.quoted.single.python punctuation.definition.string.end.python
+14:25 «^^» punctuation.definition.datatype.ldpy
+14:27 «xsd» entity.name.type.pname.prefix.ldpy
+14:30 «:» punctuation.separator.pname.ldpy
+14:31 «int» entity.name.other.pname.local.ldpy
+14:34 «,» punctuation.separator.triples.ldpy
+14:36 «true» constant.language.ldpy
+14:41 «.» punctuation.separator.triples.ldpy
+
+15:9 «_:» punctuation.definition.bnode.ldpy
+15:11 «b» entity.name.other.bnode.ldpy
+15:13 «sosa» entity.name.type.pname.prefix.ldpy
+15:17 «:» punctuation.separator.pname.ldpy
+15:18 «obs» entity.name.other.pname.local.ldpy
+15:22 «?x» variable.other.sparql.ldpy
+15:25 «}» punctuation.definition.graph.end.ldpy
+
+
+17:1 «def» meta.function.python storage.type.function.python
+17:5 «observation» meta.function.python entity.name.function.python
+17:16 «(» meta.function.python meta.function.parameters.python punctuation.definition.parameters.begin.python
+17:17 «sensor_id» meta.function.python meta.function.parameters.python variable.parameter.function.language.python
+17:26 «,» meta.function.python meta.function.parameters.python punctuation.separator.parameters.python
+17:28 «value» meta.function.python meta.function.parameters.python variable.parameter.function.language.python
+17:33 «)» meta.function.python meta.function.parameters.python punctuation.definition.parameters.end.python
+17:34 «:» meta.function.python punctuation.section.function.begin.python
+
+18:5 «return» keyword.control.flow.python
+18:12 «g» storage.type.graph.ldpy
+18:13 «{» punctuation.definition.graph.begin.ldpy
+18:15 «f» storage.type.firi.ldpy
+18:16 «<» punctuation.definition.firi.begin.ldpy
+18:17 «http://example.org/sensor/» string.interpolated.firi.ldpy
+18:43 «{» string.interpolated.firi.ldpy punctuation.section.interpolation.begin.ldpy
+18:44 «sensor_id» string.interpolated.firi.ldpy
+18:53 «}» string.interpolated.firi.ldpy punctuation.section.interpolation.end.ldpy
+18:54 «>» punctuation.definition.firi.end.ldpy
+18:56 «sosa» entity.name.type.pname.prefix.ldpy
+18:60 «:» punctuation.separator.pname.ldpy
+18:61 «v» entity.name.other.pname.local.ldpy
+18:63 «{» punctuation.section.interpolation.begin.ldpy
+18:64 «value» -
+18:69 «}» punctuation.section.interpolation.end.ldpy
+18:71 «}» punctuation.definition.graph.end.ldpy
+
+
+20:1 «call» -
+20:6 «=» keyword.operator.assignment.python
+20:8 «observation» meta.function-call.python meta.function-call.generic.python
+20:19 «(» meta.function-call.python punctuation.definition.arguments.begin.python
+20:20 «sosa» meta.function-call.python meta.function-call.arguments.python entity.name.type.pname.prefix.ldpy
+20:24 «:» meta.function-call.python meta.function-call.arguments.python punctuation.separator.pname.ldpy
+20:25 «x» meta.function-call.python meta.function-call.arguments.python entity.name.other.pname.local.ldpy
+20:26 «,» meta.function-call.python meta.function-call.arguments.python punctuation.separator.arguments.python
+20:28 «_:» meta.function-call.python meta.function-call.arguments.python punctuation.definition.bnode.ldpy
+20:30 «bn» meta.function-call.python meta.function-call.arguments.python entity.name.other.bnode.ldpy
+20:32 «)» meta.function-call.python punctuation.definition.arguments.end.python
+
+21:1 «lst» -
+21:5 «=» keyword.operator.assignment.python
+21:7 «[» punctuation.definition.list.begin.python
+21:8 «sosa» entity.name.type.pname.prefix.ldpy
+21:12 «:» punctuation.separator.pname.ldpy
+21:13 «a» entity.name.other.pname.local.ldpy
+21:14 «,» punctuation.separator.element.python
+21:16 «sosa» entity.name.type.pname.prefix.ldpy
+21:20 «:» punctuation.separator.pname.ldpy
+21:21 «b» entity.name.other.pname.local.ldpy
+21:22 «]» punctuation.definition.list.end.python
+
+22:1 «tup» -
+22:5 «=» keyword.operator.assignment.python
+22:7 «(» punctuation.parenthesis.begin.python
+22:8 «sosa» entity.name.type.pname.prefix.ldpy
+22:12 «:» punctuation.separator.pname.ldpy
+22:13 «a» entity.name.other.pname.local.ldpy
+22:14 «,» punctuation.separator.element.python
+22:16 «_:» punctuation.definition.bnode.ldpy
+22:18 «b2» entity.name.other.bnode.ldpy
+22:20 «)» punctuation.parenthesis.end.python
+
+23:1 «fnode» -
+23:7 «=» keyword.operator.assignment.python
+23:9 «f» storage.type.fnode.ldpy
+23:10 «{» punctuation.definition.fnode.begin.ldpy
+23:12 «"» string.quoted.single.python punctuation.definition.string.begin.python
+23:13 «n» string.quoted.single.python
+23:14 «"» string.quoted.single.python punctuation.definition.string.end.python
+23:16 «+» keyword.operator.arithmetic.python
+23:18 «str» meta.function-call.python support.type.python
+23:21 «(» meta.function-call.python punctuation.definition.arguments.begin.python
+23:22 «1» meta.function-call.python meta.function-call.arguments.python constant.numeric.dec.python
+23:23 «)» meta.function-call.python punctuation.definition.arguments.end.python
+23:25 «}» punctuation.definition.fnode.end.ldpy
+
+24:1 «qnode» -
+24:7 «=» keyword.operator.assignment.python
+24:9 «?» storage.type.fnode.ldpy
+24:10 «{» punctuation.definition.fnode.begin.ldpy
+24:12 «t» -
+24:14 «}» punctuation.definition.fnode.end.ldpy
+
+25:1 «enode» -
+25:7 «=» keyword.operator.assignment.python
+25:9 «e» storage.type.sparql-expr.ldpy
+25:10 «{» punctuation.definition.sparql-expr.begin.ldpy
+25:12 «STR» meta.function-call.python meta.function-call.generic.python
+25:15 «(» meta.function-call.python punctuation.definition.arguments.begin.python
+25:16 «?name» meta.function-call.python meta.function-call.arguments.python variable.other.sparql.ldpy
+25:21 «)» meta.function-call.python punctuation.definition.arguments.end.python
+25:23 «}» punctuation.definition.sparql-expr.end.ldpy
+
+26:1 «eiri» -
+26:6 «=» keyword.operator.assignment.python
+26:8 «e» storage.type.eiri.ldpy
+26:9 «<» punctuation.definition.eiri.begin.ldpy
+26:10 «http://example.org/» string.interpolated.eiri.ldpy
+26:29 «{» string.interpolated.eiri.ldpy punctuation.section.interpolation.begin.ldpy
+26:30 «t» string.interpolated.eiri.ldpy
+26:31 «}» string.interpolated.eiri.ldpy punctuation.section.interpolation.end.ldpy
+26:32 «>» punctuation.definition.eiri.end.ldpy
+
+27:1 «first» -
+27:7 «=» keyword.operator.assignment.python
+27:9 «call» meta.item-access.python meta.indexed-name.python
+27:13 «[» meta.item-access.python punctuation.definition.arguments.begin.python
+27:14 «0» meta.item-access.python meta.item-access.arguments.python constant.numeric.dec.python
+27:15 «]» meta.item-access.python punctuation.definition.arguments.end.python
+

@@ -1,0 +1,27 @@
+@prefix sosa: <http://www.w3.org/ns/sosa/> .
+@prefix : <http://example.org/> .
+@base <http://example.org/> .
+
+t = <http://example.org/x>
+u = sosa:Sensor
+b1 = _:station1
+b2 = _:{u}
+lit = "chat"@fr
+num = "5"^^xsd:integer
+iri2 = "x"^^<http://www.w3.org/2001/XMLSchema#string>
+gr = g{ f<http://example.org/sensor/{t}> a sosa:Sensor ;
+        sosa:madeObservation [ sosa:hasSimpleResult {num} ] ;
+        :p "val"@en, "3"^^xsd:int, true .
+        _:b sosa:obs ?x }
+
+def observation(sensor_id, value):
+    return g{ f<http://example.org/sensor/{sensor_id}> sosa:v {value} }
+
+call = observation(sosa:x, _:bn)
+lst = [sosa:a, sosa:b]
+tup = (sosa:a, _:b2)
+fnode = f{ "n" + str(1) }
+qnode = ?{ t }
+enode = e{ STR(?name) }
+eiri = e<http://example.org/{t}>
+first = call[0]
