@@ -1,22 +1,19 @@
 {
 	"name": "linked-data-python",
 	"displayName": "Linked-Data Python",
-	"description": "This extension for Visual Studio Code enables the syntax highlighting for Linked-Data Python source files (extensions `.ldpy`).",
+	"description": "Linked-Data Python (.ldpy) : coloration, diagnostics, complétion, hover, définition (serveur LSP ldpy), exécution et débogage.",
 	"icon": "ldpyIcon.png",
 	"repository": "gitlab:coswot/vscode-ldpy",
 	"publisher": "MaximeLefrancois",
-	"version": "0.0.2",
+	"version": "0.2.0",
 	"main": "./out/extension.js",
 	"engines": {
-		"vscode": "^1.66.0"
+		"vscode": "^1.75.0"
 	},
 	"categories": [
 		"Programming Languages"
 	],
 	"contributes": {
-		"css": {
-			"customData": [ "./media/ldpy.css"	]
-		},
 		"languages": [
 			{
 				"id": "ldpy",
@@ -31,7 +28,7 @@
 				"icon": {
 					"light": "./icons/rdf-file_icon-icons.com_71375.png",
 					"dark": "./icons/rdf-file_icon-icons.com_71375.png"
-				  }
+				}
 			}
 		],
 		"grammars": [
@@ -41,12 +38,90 @@
 				"path": "./syntaxes/ldpy.tmLanguage.json"
 			}
 		],
-		"breakpoints": [{ "language": "ldpy" }]
+		"breakpoints": [
+			{
+				"language": "ldpy"
+			}
+		],
+		"commands": [
+			{
+				"command": "ldpy.run",
+				"title": "ldpy: Run current file"
+			},
+			{
+				"command": "ldpy.debug",
+				"title": "ldpy: Debug current file (shadow)"
+			},
+			{
+				"command": "ldpy.showShadow",
+				"title": "ldpy: Show transpiled Python (shadow)"
+			},
+			{
+				"command": "ldpy.restartServer",
+				"title": "ldpy: Restart language server"
+			}
+		],
+		"configuration": {
+			"title": "Linked-Data Python",
+			"properties": {
+				"ldpy.pythonPath": {
+					"type": "string",
+					"default": "python3",
+					"description": "Interpréteur Python qui porte le paquet ldpy (serveur LSP, build, debug)."
+				},
+				"ldpy.backend": {
+					"type": "string",
+					"enum": [
+						"pylsp",
+						"none"
+					],
+					"default": "pylsp",
+					"description": "Serveur LSP Python délégué pour la complétion/définition (request forwarding)."
+				},
+				"ldpy.buildDirectory": {
+					"type": "string",
+					"default": ".ldpy-build",
+					"description": "Répertoire des fichiers Python fantômes (build/debug)."
+				}
+			}
+		},
+		"menus": {
+			"commandPalette": [
+				{
+					"command": "ldpy.run",
+					"when": "editorLangId == ldpy"
+				},
+				{
+					"command": "ldpy.debug",
+					"when": "editorLangId == ldpy"
+				},
+				{
+					"command": "ldpy.showShadow",
+					"when": "editorLangId == ldpy"
+				}
+			]
+		}
 	},
 	"__metadata": {
 		"id": "b33e9145-6168-4a63-9488-6eda27a08b1e",
 		"publisherDisplayName": "Maxime Lefrançois",
 		"publisherId": "32ad1cac-5cad-4c32-91dd-3e46ee2c592d",
 		"isPreReleaseVersion": false
+	},
+	"activationEvents": [
+		"onLanguage:ldpy"
+	],
+	"scripts": {
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"vscode:prepublish": "npm run compile"
+	},
+	"dependencies": {
+		"vscode-languageclient": "^9.0.1"
+	},
+	"devDependencies": {
+		"@types/node": "^20.0.0",
+		"@types/vscode": "^1.75.0",
+		"typescript": "^5.4.0"
 	}
 }
