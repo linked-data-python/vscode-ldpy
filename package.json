@@ -11,7 +11,8 @@
 		"vscode": "^1.75.0"
 	},
 	"categories": [
-		"Programming Languages"
+		"Programming Languages",
+		"Debuggers"
 	],
 	"contributes": {
 		"languages": [
@@ -41,6 +42,83 @@
 		"breakpoints": [
 			{
 				"language": "ldpy"
+			}
+		],
+		"debuggers": [
+			{
+				"type": "ldpy",
+				"label": "Linked-Data Python",
+				"languages": [
+					"ldpy"
+				],
+				"configurationAttributes": {
+					"launch": {
+						"required": [
+							"program"
+						],
+						"properties": {
+							"program": {
+								"type": "string",
+								"description": "Fichier .ldpy à déboguer.",
+								"default": "${file}"
+							},
+							"args": {
+								"type": "array",
+								"items": {
+									"type": "string"
+								},
+								"description": "Arguments passés au script.",
+								"default": []
+							},
+							"python": {
+								"type": "string",
+								"description": "Interpréteur Python portant le paquet ldpy (défaut : ldpy.pythonPath, sinon l'interpréteur actif de l'extension Python)."
+							},
+							"console": {
+								"type": "string",
+								"enum": [
+									"integratedTerminal",
+									"internalConsole",
+									"externalTerminal"
+								],
+								"default": "integratedTerminal"
+							},
+							"justMyCode": {
+								"type": "boolean",
+								"default": true,
+								"description": "Ne déboguer que le code utilisateur (masque le runtime ldpy installé)."
+							},
+							"cwd": {
+								"type": "string",
+								"description": "Répertoire de travail (défaut : celui du fichier)."
+							},
+							"env": {
+								"type": "object",
+								"description": "Variables d'environnement supplémentaires."
+							}
+						}
+					}
+				},
+				"initialConfigurations": [
+					{
+						"type": "ldpy",
+						"request": "launch",
+						"name": "ldpy : fichier courant",
+						"program": "${file}"
+					}
+				],
+				"configurationSnippets": [
+					{
+						"label": "ldpy : déboguer le fichier courant",
+						"description": "Débogue le fichier .ldpy ouvert (debugpy, breakpoints directement dans le .ldpy).",
+						"body": {
+							"type": "ldpy",
+							"request": "launch",
+							"name": "ldpy : fichier courant",
+							"program": "^\"\\${file}\""
+						}
+					}
+				]
 			}
 		],
 		"commands": [
@@ -109,7 +187,9 @@
 		"isPreReleaseVersion": false
 	},
 	"activationEvents": [
-		"onLanguage:ldpy"
+		"onLanguage:ldpy",
+		"onDebugResolve:ldpy",
+		"onDebugDynamicConfigurations:ldpy"
 	],
 	"scripts": {
 		"compile": "tsc -p ./",
