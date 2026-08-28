@@ -4,6 +4,11 @@ All notable changes to the "linked-data-python" extension will be documented in 
 
 ## [Non publié]
 
+- Coloration des constructions des fiches 013-020 : `s{ }` (SPARQL léger,
+  accolades équilibrées, interpolations re-basculées en Python), `m{ }`,
+  `+{ }`/`-{ }`, `@graph`/`@bindings` (avec `global`/`nonlocal`),
+  `for @bindings [as b] in`, pnames dans les listes d'import — parité
+  Python pur intacte, golden étendu.
 - Coloration : grammaire GÉNÉRÉE depuis le MagicPython officiel de VS Code
   (`npm run generate`) — un fichier Python pur reçoit exactement les mêmes
   scopes qu'en `.py` (testé au caractère près par `npm test`) ; îlots ldpy
