@@ -8,6 +8,12 @@
  *   est compilé en coordonnées source (fiche ldpy/011), les breakpoints
  *   posés dans le .ldpy se lient donc directement, sans fantôme ni
  *   traduction. Aucun adaptateur DAP à écrire.
+ *   Les `rules` de pas (fiche vscode/103, qui masquent le lanceur et, sous
+ *   justMyCode, le runtime) viennent de `python -m ldpy.debug --probe` :
+ *   elles sont décrites dans le paquet Python, pas ici.
+ * - Points d'arrêt : celui posé DANS un îlot multiligne ne peut pas se lier
+ *   (l'îlot s'effondre en une instruction) ; on le déplace visiblement sur
+ *   la première ligne de l'îlot, via la requête LSP `ldpy/breakpointLines`.
  * - `ldpy: Run current file`   : exécute via `python -m ldpy` dans un terminal.
  * - `ldpy: Show transpiled Python (shadow)` : ouvre le fantôme à côté.
  * - Interpréteur : ldpy.pythonPath s'il est réglé, sinon l'interpréteur
@@ -21,6 +27,8 @@ import {
 } from 'vscode-languageclient/node';
 
 let client: LanguageClient | undefined;
+/** Vrai pendant qu'on remplace des points d'arrêt (anti-réentrance). */
+let snapping = false;
 
 function config() {
     const c = vscode.workspace.getConfiguration('ldpy');
@@ -49,11 +57,30 @@ async function resolvePython(): Promise<string> {
     return c.get<string>('pythonPath', 'python3');
 }
 
-/** Vérifie que le paquet ldpy est importable par cet interpréteur. */
-function checkLdpy(python: string): Promise<boolean> {
+/** Ce que `python -m ldpy.debug --probe` rapporte sur un interpréteur. */
+interface LdpyProbe {
+    package: string;
+    version: string | null;
+    python: string;
+    rules: { justMyCode: DebugRule[]; all: DebugRule[] };
+}
+
+interface DebugRule { path: string; include: boolean; }
+
+/**
+ * Interroge l'interpréteur : le paquet ldpy est-il là, et avec quelles règles
+ * de pas ? Un seul processus remplace l'ancien `import ldpy`, et la politique
+ * de la fiche vscode/103 reste décrite d'un seul côté (Python), donc testée
+ * par la suite pytest plutôt que réécrite ici.
+ */
+function probeLdpy(python: string): Promise<LdpyProbe | undefined> {
     return new Promise((resolve) => {
-        cp.execFile(python, ['-c', 'import ldpy'],
-            (err) => resolve(!err));
+        cp.execFile(python, ['-m', 'ldpy.debug', '--probe'],
+            { timeout: 20000 }, (err, stdout) => {
+                if (err) { resolve(undefined); return; }
+                try { resolve(JSON.parse(stdout) as LdpyProbe); }
+                catch { resolve(undefined); }
+            });
     });
 }
 
@@ -126,7 +153,8 @@ class LdpyDebugConfigurationProvider
         }
 
         const python = cfg.python ?? await resolvePython();
-        if (!(await checkLdpy(python))) {
+        const probe = await probeLdpy(python);
+        if (!probe) {
             vscode.window.showErrorMessage(
                 `ldpy : paquet introuvable pour « ${python} ». ` +
                 'Installer linked-data-python dans cet environnement ou ' +
@@ -140,6 +168,12 @@ class LdpyDebugConfigurationProvider
         if (Array.isArray(cfg.args) && cfg.args.length) {
             args.push('--', ...cfg.args);
         }
+        // Fiche vscode/103 : sans ces règles, un pas au-delà de la dernière
+        // ligne atterrit dans ldpy/debug.py et la pile d'appels montre trois
+        // trames de plomberie. Une configuration peut les remplacer.
+        const justMyCode = cfg.justMyCode ?? true;
+        const rules: DebugRule[] = cfg.rules
+            ?? (justMyCode ? probe.rules.justMyCode : probe.rules.all);
         // On démarre nous-mêmes la session Python équivalente, puis on
         // annule silencieusement la session « ldpy » (retour null) : c'est
         // le schéma supporté pour déléguer à un autre débogueur.
@@ -148,13 +182,73 @@ class LdpyDebugConfigurationProvider
                 vscode.Uri.file(program)), {
             type: debugpyType, request: 'launch',
             name: cfg.name || `ldpy : ${path.basename(program)}`,
-            module: 'ldpy.debug', args, python,
+            module: 'ldpy.debug', args, python, rules,
             console: cfg.console ?? 'integratedTerminal',
-            justMyCode: cfg.justMyCode ?? true,
+            justMyCode,
             cwd: cfg.cwd ?? path.dirname(program),
             env: cfg.env,
         });
         return null;
+    }
+}
+
+// --------------------------------------------------------- points d'arrêt
+
+/**
+ * Un point d'arrêt posé À L'INTÉRIEUR d'un îlot multiligne ne se déclenchera
+ * jamais : l'îlot s'effondre en une seule instruction, qui porte la ligne de
+ * DÉBUT (fiche ldpy/011). debugpy répond pourtant « verified » — la pastille
+ * est rouge pleine et ne s'arrête pas, ce qui est pire que gris.
+ *
+ * On le déplace donc, tout de suite et visiblement, sur la ligne où il se
+ * liera. Le serveur LSP fait le calcul (il tient la language map du document
+ * ouvert) ; sans serveur, on ne touche à rien.
+ */
+async function snapBreakpoints(
+    breakpoints: readonly vscode.Breakpoint[]): Promise<void> {
+
+    if (!client || snapping) { return; }
+    const byFile = new Map<string, vscode.SourceBreakpoint[]>();
+    for (const bp of breakpoints) {
+        if (!(bp instanceof vscode.SourceBreakpoint)) { continue; }
+        const uri = bp.location.uri;
+        if (!uri.fsPath.endsWith('.ldpy')) { continue; }
+        const key = uri.toString();
+        const bucket = byFile.get(key);
+        if (bucket) { bucket.push(bp); } else { byFile.set(key, [bp]); }
+    }
+    if (!byFile.size) { return; }
+
+    const remove: vscode.Breakpoint[] = [];
+    const add: vscode.Breakpoint[] = [];
+    for (const [uri, bps] of byFile) {
+        // LSP : lignes 1-based, comme le débogueur ; VS Code compte de 0.
+        const lines = bps.map(b => b.location.range.start.line + 1);
+        let snapped: number[];
+        try {
+            const r = await client.sendRequest<{ lines: number[] }>(
+                'ldpy/breakpointLines', { textDocument: { uri }, lines });
+            snapped = r?.lines ?? lines;
+        } catch { continue; }
+        snapped.forEach((line, i) => {
+            if (line === lines[i]) { return; }
+            const bp = bps[i];
+            const pos = new vscode.Position(line - 1, 0);
+            remove.push(bp);
+            add.push(new vscode.SourceBreakpoint(
+                new vscode.Location(bp.location.uri, pos),
+                bp.enabled, bp.condition, bp.hitCondition, bp.logMessage));
+        });
+    }
+    if (!remove.length) { return; }
+    // Le remplacement redéclenche l'événement : ce drapeau évite la boucle
+    // (les nouvelles lignes sont stables, mais mieux vaut ne pas en dépendre).
+    snapping = true;
+    try {
+        vscode.debug.removeBreakpoints(remove);
+        vscode.debug.addBreakpoints(add);
+    } finally {
+        snapping = false;
     }
 }
 
@@ -226,6 +320,8 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.debug.registerDebugConfigurationProvider('ldpy', provider),
         vscode.debug.registerDebugConfigurationProvider('ldpy', provider,
             vscode.DebugConfigurationProviderTriggerKind.Dynamic),
+        vscode.debug.onDidChangeBreakpoints(
+            e => { void snapBreakpoints([...e.added, ...e.changed]); }),
     );
     try {
         await startClient(context);
