@@ -1,10 +1,11 @@
 {
 	"information_for_contributors": [
-		"FICHIER GÉNÉRÉ par syntaxes/generate.js — ne pas éditer à la main.",
+		"FICHIER GÉNÉRÉ par le paquet linked-data-python-highlight (src/textmate.js).",
+		"Ne pas éditer à la main. Régénérer : npm run generate (dans highlight-ldpy).",
 		"Base : MagicPython vendored (syntaxes/upstream/, copié de VS Code) ; les scopes",
 		"Python gardent le suffixe .python pour hériter des règles de thème exactes,",
 		"les îlots ldpy portent le suffixe .ldpy.",
-		"Régénérer : npm run generate — vérifier : npm test."
+		"Vérifier : npm test (parité MagicPython au caractère près)."
 	],
 	"version": "https://github.com/MagicStack/MagicPython/commit/7d0f2b22a5ad8fccbd7341bc7b7a715169283044",
 	"name": "ldpy",
@@ -4291,7 +4292,7 @@
 		},
 		"ldpy-prefix": {
 			"name": "meta.directive.prefix.ldpy",
-			"begin": "^\\s*(@prefix)(?=\\s+(?:[A-Za-z_][\\w.-]*)?:\\s*<)",
+			"begin": "^\\s*(@prefix)(?=\\s+(?:[A-Za-z_][\\w.-]*)?:\\s*f?<)",
 			"end": "(?=\\n|#)",
 			"beginCaptures": {
 				"1": {
@@ -4299,6 +4300,9 @@
 				}
 			},
 			"patterns": [
+				{
+					"include": "#ldpy-firi"
+				},
 				{
 					"match": "([A-Za-z_][\\w.-]*)?(:)",
 					"captures": {
@@ -4326,7 +4330,7 @@
 		},
 		"ldpy-base": {
 			"name": "meta.directive.base.ldpy",
-			"begin": "^\\s*(@base)(?=\\s+<)",
+			"begin": "^\\s*(@base)(?=\\s+f?<)",
 			"end": "(?=\\n|#)",
 			"beginCaptures": {
 				"1": {
@@ -4334,6 +4338,9 @@
 				}
 			},
 			"patterns": [
+				{
+					"include": "#ldpy-firi"
+				},
 				{
 					"match": "([A-Za-z_][\\w.-]*)?(:)",
 					"captures": {
@@ -4443,7 +4450,7 @@
 			},
 			"patterns": [
 				{
-					"include": "#expression"
+					"include": "#ldpy-sparql-content"
 				}
 			]
 		},
@@ -5000,6 +5007,10 @@
 					"name": "keyword.control.sparql.ldpy"
 				},
 				{
+					"match": "\\b(?i:ABS|AVG|BNODE|BOUND|CEIL|COALESCE|CONCAT|CONTAINS|COUNT|DATATYPE|DAY|ENCODE_FOR_URI|FLOOR|GROUP_CONCAT|HOURS|IF|IRI|isBLANK|isIRI|isLITERAL|isNUMERIC|isURI|LANG|LANGMATCHES|LCASE|MAX|MD5|MIN|MINUTES|MONTH|NOW|RAND|REGEX|REPLACE|ROUND|sameTerm|SAMPLE|SECONDS|SEPARATOR|SHA1|SHA256|SHA384|SHA512|STR|STRAFTER|STRBEFORE|STRDT|STRENDS|STRLANG|STRLEN|STRSTARTS|STRUUID|SUBSTR|SUM|TIMEZONE|TZ|UCASE|URI|UUID|YEAR)\\b(?=\\s*\\()",
+					"name": "support.function.sparql.ldpy"
+				},
+				{
 					"include": "#ldpy-sparql-var"
 				},
 				{
@@ -5049,6 +5060,10 @@
 				{
 					"match": "[;,.]",
 					"name": "punctuation.separator.triples.ldpy"
+				},
+				{
+					"match": "[()]",
+					"name": "punctuation.section.bnode.ldpy"
 				}
 			]
 		},

@@ -206,10 +206,10 @@
 25:7 «=» keyword.operator.assignment.python
 25:9 «e» storage.type.sparql-expr.ldpy
 25:10 «{» punctuation.definition.sparql-expr.begin.ldpy
-25:12 «STR» meta.function-call.python meta.function-call.generic.python
-25:15 «(» meta.function-call.python punctuation.definition.arguments.begin.python
-25:16 «?name» meta.function-call.python meta.function-call.arguments.python variable.other.sparql.ldpy
-25:21 «)» meta.function-call.python punctuation.definition.arguments.end.python
+25:12 «STR» support.function.sparql.ldpy
+25:15 «(» punctuation.section.bnode.ldpy
+25:16 «?name» variable.other.sparql.ldpy
+25:21 «)» punctuation.section.bnode.ldpy
 25:23 «}» punctuation.definition.sparql-expr.end.ldpy
 
 26:1 «eiri» -
@@ -255,12 +255,18 @@
 31:9 «example.org» string.quoted.single.python
 31:20 «"» string.quoted.single.python punctuation.definition.string.end.python
 
-32:1 «@» meta.function.decorator.python entity.name.function.decorator.python punctuation.definition.decorator.python
-32:2 «prefix» meta.function.decorator.python entity.name.function.decorator.python
-32:9 «dyn» meta.function.decorator.python entity.name.function.decorator.python
-32:12 «: f<http://{host}/ns» meta.function.decorator.python invalid.illegal.decorator.python invalid.illegal.decorator.python
-32:32 «#» comment.line.number-sign.python punctuation.definition.comment.python
-32:33 «> .» comment.line.number-sign.python
+32:1 «@prefix» meta.directive.prefix.ldpy keyword.other.prefix.ldpy
+32:9 «dyn» meta.directive.prefix.ldpy entity.name.type.pname.prefix.ldpy
+32:12 «:» meta.directive.prefix.ldpy punctuation.separator.pname.ldpy
+32:14 «f» meta.directive.prefix.ldpy storage.type.firi.ldpy
+32:15 «<» meta.directive.prefix.ldpy punctuation.definition.firi.begin.ldpy
+32:16 «http://» meta.directive.prefix.ldpy string.interpolated.firi.ldpy
+32:23 «{» meta.directive.prefix.ldpy string.interpolated.firi.ldpy punctuation.section.interpolation.begin.ldpy
+32:24 «host» meta.directive.prefix.ldpy string.interpolated.firi.ldpy
+32:28 «}» meta.directive.prefix.ldpy string.interpolated.firi.ldpy punctuation.section.interpolation.end.ldpy
+32:29 «/ns#» meta.directive.prefix.ldpy string.interpolated.firi.ldpy
+32:33 «>» meta.directive.prefix.ldpy punctuation.definition.firi.end.ldpy
+32:35 «.» meta.directive.prefix.ldpy punctuation.terminator.directive.ldpy
 
 33:1 «@graph» meta.directive.graph.ldpy keyword.other.graph.ldpy
 33:8 «as» meta.directive.graph.ldpy keyword.control.flow.python
@@ -402,8 +408,8 @@
 44:23 «e» storage.type.sparql-expr.ldpy
 44:24 «{» punctuation.definition.sparql-expr.begin.ldpy
 44:26 «?v» variable.other.sparql.ldpy
-44:29 «*» keyword.operator.arithmetic.python
-44:31 «2» constant.numeric.dec.python
+44:28 « * » -
+44:31 «2» constant.numeric.ldpy
 44:33 «}» punctuation.definition.sparql-expr.end.ldpy
 44:35 «}» punctuation.definition.addremove.end.ldpy
 
