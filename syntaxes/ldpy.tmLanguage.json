@@ -4977,6 +4977,25 @@
 					"include": "#comments"
 				},
 				{
+					"begin": "\\{(?![^{}]*[?$])(?![^{}]*\\b(?i:select|filter|optional|union|minus|graph|service|values|bind|where)\\b)(?=[^{}]*\\})",
+					"end": "\\}",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.section.interpolation.begin.ldpy"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.section.interpolation.end.ldpy"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#expression"
+						}
+					]
+				},
+				{
 					"match": "\\b(?i:select|construct|describe|ask|where|from|named|order|by|group|having|limit|offset|distinct|reduced|optional|union|minus|graph|service|silent|filter|bind|values|insert|delete|data|with|using|load|clear|drop|create|copy|move|add|exists|not|in|as|a)\\b",
 					"name": "keyword.control.sparql.ldpy"
 				},

@@ -360,9 +360,9 @@
 42:46 «{» punctuation.section.group.sparql.begin.ldpy
 42:48 «?s» variable.other.sparql.ldpy
 42:51 «a» keyword.control.sparql.ldpy
-42:53 «{» punctuation.section.group.sparql.begin.ldpy
-42:54 «cls» -
-42:57 «}» punctuation.section.group.sparql.end.ldpy
+42:53 «{» punctuation.section.interpolation.begin.ldpy
+42:54 «cls» variable.language.special.cls.python
+42:57 «}» punctuation.section.interpolation.end.ldpy
 42:59 «.» punctuation.separator.triples.ldpy
 42:61 «{» punctuation.section.group.sparql.begin.ldpy
 42:63 «SELECT» keyword.control.sparql.ldpy

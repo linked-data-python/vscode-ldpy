@@ -333,9 +333,23 @@ const islands = {
 };
 
 // Intérieur d'un s{…} : coloration SPARQL légère, accolades équilibrées.
+// Une interpolation {expr} RE-BASCULE en Python (#expression) ; l'oracle
+// exact du transpileur (transpile puis compile) n'existe pas en TextMate,
+// l'approximation : contenu sans variable ?/$ ni mot-clé SPARQL sur un
+// niveau d'accolades. Les cas ambigus restent colorés en groupe ; les
+// semantic tokens du LSP raffinent (fiche 102).
 islands['ldpy-sparql-content'] = {
     patterns: [
         inc('#comments'),
+        {
+            begin: String.raw`\{(?![^{}]*[?$])` +
+                String.raw`(?![^{}]*\b(?i:select|filter|optional|union|minus|graph|service|values|bind|where)\b)` +
+                String.raw`(?=[^{}]*\})`,
+            end: String.raw`\}`,
+            beginCaptures: { 0: { name: 'punctuation.section.interpolation.begin.ldpy' } },
+            endCaptures: { 0: { name: 'punctuation.section.interpolation.end.ldpy' } },
+            patterns: [inc('#expression')],
+        },
         { match: String.raw`\b(?i:select|construct|describe|ask|where|from|named|order|by|group|having|limit|offset|distinct|reduced|optional|union|minus|graph|service|silent|filter|bind|values|insert|delete|data|with|using|load|clear|drop|create|copy|move|add|exists|not|in|as|a)\b`,
           name: 'keyword.control.sparql.ldpy' },
         inc('#ldpy-sparql-var'),
