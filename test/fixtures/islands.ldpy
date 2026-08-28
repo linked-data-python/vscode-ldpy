@@ -25,3 +25,20 @@ qnode = ?{ t }
 enode = e{ STR(?name) }
 eiri = e<http://example.org/{t}>
 first = call[0]
+
+# --- fiches 013-020 ---
+from myproject.vocab import something, brick:, unit: as u:
+host = "example.org"
+@prefix dyn: f<http://{host}/ns#> .
+@graph as g
+@graph <http://e/g1> as named
+@graph self.store
+global @graph as chosen
+nonlocal @bindings sol
+@bindings as b
++{ ex:s ex:p 1 ; ex:q "deux"@fr }
+-{ ex:s ex:p ?any }(autre)
+sensors = list(m{ ?s a ex:Sensor ; ex:v ?v })
+rows = [tuple(r) for r in s{ SELECT ?s WHERE { ?s a {cls} . { SELECT ?s WHERE { ?s ?p ?o } } } }]
+for @bindings as row in m{ ?s ex:reading ?v }:
+    +{ ?s ex:hasValue e{ ?v * 2 } }

@@ -25,6 +25,15 @@
 		"statement": {
 			"patterns": [
 				{
+					"include": "#ldpy-addremove"
+				},
+				{
+					"include": "#ldpy-graph-decl"
+				},
+				{
+					"include": "#ldpy-bindings-decl"
+				},
+				{
 					"include": "#import"
 				},
 				{
@@ -296,7 +305,16 @@
 					"include": "#ldpy-graph"
 				},
 				{
+					"include": "#ldpy-match"
+				},
+				{
+					"include": "#ldpy-sparql"
+				},
+				{
 					"include": "#ldpy-enode"
+				},
+				{
+					"include": "#ldpy-for-bindings"
 				},
 				{
 					"include": "#ldpy-firi-op"
@@ -1029,6 +1047,9 @@
 						{
 							"name": "keyword.control.import.python",
 							"match": "\\b(?<!\\.)as\\b"
+						},
+						{
+							"include": "#ldpy-import-prefix"
 						},
 						{
 							"include": "#expression"
@@ -4360,6 +4381,50 @@
 				}
 			]
 		},
+		"ldpy-match": {
+			"begin": "\\b(m)(\\{)",
+			"end": "\\}",
+			"beginCaptures": {
+				"1": {
+					"name": "storage.type.match.ldpy"
+				},
+				"2": {
+					"name": "punctuation.definition.match.begin.ldpy"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.match.end.ldpy"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#ldpy-graph-content"
+				}
+			]
+		},
+		"ldpy-sparql": {
+			"begin": "\\b(s)(\\{)",
+			"end": "\\}",
+			"beginCaptures": {
+				"1": {
+					"name": "storage.type.sparql.ldpy"
+				},
+				"2": {
+					"name": "punctuation.definition.sparql.begin.ldpy"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.sparql.end.ldpy"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#ldpy-sparql-content"
+				}
+			]
+		},
 		"ldpy-enode": {
 			"begin": "\\b(e)(\\{)",
 			"end": "\\}",
@@ -4381,6 +4446,139 @@
 					"include": "#expression"
 				}
 			]
+		},
+		"ldpy-addremove": {
+			"begin": "^\\s*([+-])(\\{)",
+			"end": "\\}",
+			"beginCaptures": {
+				"1": {
+					"name": "storage.type.addremove.ldpy"
+				},
+				"2": {
+					"name": "punctuation.definition.addremove.begin.ldpy"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.addremove.end.ldpy"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#ldpy-graph-content"
+				}
+			]
+		},
+		"ldpy-graph-decl": {
+			"name": "meta.directive.graph.ldpy",
+			"begin": "^\\s*(?:(global|nonlocal)\\s+)?(@graph)(?=\\s+[^\\s(.\\[#])",
+			"end": "(?=\\n|#)",
+			"beginCaptures": {
+				"1": {
+					"name": "storage.modifier.declaration.python"
+				},
+				"2": {
+					"name": "keyword.other.graph.ldpy"
+				}
+			},
+			"patterns": [
+				{
+					"match": "\\bas\\b",
+					"name": "keyword.control.flow.python"
+				},
+				{
+					"match": "<[^<>\"{}|^`\\\\\\s]*>",
+					"name": "string.quoted.other.iriref.ldpy"
+				},
+				{
+					"include": "#ldpy-firi"
+				},
+				{
+					"match": "([A-Za-z_][\\w.-]*)(:)([A-Za-z0-9_][\\w.-]*)",
+					"captures": {
+						"1": {
+							"name": "entity.name.type.pname.prefix.ldpy"
+						},
+						"2": {
+							"name": "punctuation.separator.pname.ldpy"
+						},
+						"3": {
+							"name": "entity.name.other.pname.local.ldpy"
+						}
+					}
+				},
+				{
+					"include": "#expression"
+				}
+			]
+		},
+		"ldpy-bindings-decl": {
+			"name": "meta.directive.bindings.ldpy",
+			"begin": "^\\s*(?:(global|nonlocal)\\s+)?(@bindings)(?=\\s+[^\\s(.\\[#])",
+			"end": "(?=\\n|#)",
+			"beginCaptures": {
+				"1": {
+					"name": "storage.modifier.declaration.python"
+				},
+				"2": {
+					"name": "keyword.other.bindings.ldpy"
+				}
+			},
+			"patterns": [
+				{
+					"match": "\\bas\\b",
+					"name": "keyword.control.flow.python"
+				},
+				{
+					"match": "<[^<>\"{}|^`\\\\\\s]*>",
+					"name": "string.quoted.other.iriref.ldpy"
+				},
+				{
+					"include": "#ldpy-firi"
+				},
+				{
+					"match": "([A-Za-z_][\\w.-]*)(:)([A-Za-z0-9_][\\w.-]*)",
+					"captures": {
+						"1": {
+							"name": "entity.name.type.pname.prefix.ldpy"
+						},
+						"2": {
+							"name": "punctuation.separator.pname.ldpy"
+						},
+						"3": {
+							"name": "entity.name.other.pname.local.ldpy"
+						}
+					}
+				},
+				{
+					"include": "#expression"
+				}
+			]
+		},
+		"ldpy-for-bindings": {
+			"match": "(?<=\\bfor\\s)\\s*(@bindings)\\b(?:\\s+(as)\\s+([A-Za-z_]\\w*))?",
+			"captures": {
+				"1": {
+					"name": "keyword.other.bindings.ldpy"
+				},
+				"2": {
+					"name": "keyword.control.flow.python"
+				},
+				"3": {
+					"name": "variable.other.ldpy"
+				}
+			}
+		},
+		"ldpy-import-prefix": {
+			"match": "([A-Za-z_][\\w.-]*)?(:)(?=\\s*[,)\\n#]|\\s+as\\b|\\s*$)",
+			"captures": {
+				"1": {
+					"name": "entity.name.type.pname.prefix.ldpy"
+				},
+				"2": {
+					"name": "punctuation.separator.pname.ldpy"
+				}
+			}
 		},
 		"ldpy-fnode": {
 			"begin": "(\\bf|\\?)(\\{)",
@@ -4773,6 +4971,68 @@
 				}
 			]
 		},
+		"ldpy-sparql-content": {
+			"patterns": [
+				{
+					"include": "#comments"
+				},
+				{
+					"match": "\\b(?i:select|construct|describe|ask|where|from|named|order|by|group|having|limit|offset|distinct|reduced|optional|union|minus|graph|service|silent|filter|bind|values|insert|delete|data|with|using|load|clear|drop|create|copy|move|add|exists|not|in|as|a)\\b",
+					"name": "keyword.control.sparql.ldpy"
+				},
+				{
+					"include": "#ldpy-sparql-var"
+				},
+				{
+					"match": "<[^<>\"{}|^`\\\\\\s]*>",
+					"name": "string.quoted.other.iriref.ldpy"
+				},
+				{
+					"match": "([A-Za-z_]\\w*)?(:)([A-Za-z0-9_][\\w.-]*)?",
+					"captures": {
+						"1": {
+							"name": "entity.name.type.pname.prefix.ldpy"
+						},
+						"2": {
+							"name": "punctuation.separator.pname.ldpy"
+						},
+						"3": {
+							"name": "entity.name.other.pname.local.ldpy"
+						}
+					}
+				},
+				{
+					"include": "#string"
+				},
+				{
+					"match": "[+-]?\\d+(\\.\\d+)?([eE][+-]?\\d+)?",
+					"name": "constant.numeric.ldpy"
+				},
+				{
+					"begin": "\\{",
+					"end": "\\}",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.section.group.sparql.begin.ldpy"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.section.group.sparql.end.ldpy"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#ldpy-sparql-content"
+						}
+					]
+				},
+				{
+					"match": "[;,.]",
+					"name": "punctuation.separator.triples.ldpy"
+				}
+			]
+		},
 		"expression-bare-nop": {
 			"comment": "expression-bare sans pname/bnode : contextes où NAME:NAME est du Python valide",
 			"patterns": [
@@ -4780,7 +5040,16 @@
 					"include": "#ldpy-graph"
 				},
 				{
+					"include": "#ldpy-match"
+				},
+				{
+					"include": "#ldpy-sparql"
+				},
+				{
 					"include": "#ldpy-enode"
+				},
+				{
+					"include": "#ldpy-for-bindings"
 				},
 				{
 					"include": "#ldpy-firi-op"

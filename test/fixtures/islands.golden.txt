@@ -229,3 +229,181 @@
 27:14 «0» meta.item-access.python meta.item-access.arguments.python constant.numeric.dec.python
 27:15 «]» meta.item-access.python punctuation.definition.arguments.end.python
 
+
+29:1 «#» comment.line.number-sign.python punctuation.definition.comment.python
+29:2 « --- fiches 013-020 ---» comment.line.number-sign.python
+
+30:1 «from» keyword.control.import.python
+30:6 «myproject» -
+30:15 «.» punctuation.separator.period.python
+30:16 «vocab» -
+30:22 «import» keyword.control.import.python
+30:29 «something» -
+30:38 «,» punctuation.separator.element.python
+30:40 «brick» entity.name.type.pname.prefix.ldpy
+30:45 «:» punctuation.separator.pname.ldpy
+30:46 «,» punctuation.separator.element.python
+30:48 «unit» entity.name.type.pname.prefix.ldpy
+30:52 «:» punctuation.separator.pname.ldpy
+30:54 «as» keyword.control.import.python
+30:57 «u» entity.name.type.pname.prefix.ldpy
+30:58 «:» punctuation.separator.pname.ldpy
+
+31:1 «host» -
+31:6 «=» keyword.operator.assignment.python
+31:8 «"» string.quoted.single.python punctuation.definition.string.begin.python
+31:9 «example.org» string.quoted.single.python
+31:20 «"» string.quoted.single.python punctuation.definition.string.end.python
+
+32:1 «@» meta.function.decorator.python entity.name.function.decorator.python punctuation.definition.decorator.python
+32:2 «prefix» meta.function.decorator.python entity.name.function.decorator.python
+32:9 «dyn» meta.function.decorator.python entity.name.function.decorator.python
+32:12 «: f<http://{host}/ns» meta.function.decorator.python invalid.illegal.decorator.python invalid.illegal.decorator.python
+32:32 «#» comment.line.number-sign.python punctuation.definition.comment.python
+32:33 «> .» comment.line.number-sign.python
+
+33:1 «@graph» meta.directive.graph.ldpy keyword.other.graph.ldpy
+33:8 «as» meta.directive.graph.ldpy keyword.control.flow.python
+33:11 «g» meta.directive.graph.ldpy
+
+34:1 «@graph» meta.directive.graph.ldpy keyword.other.graph.ldpy
+34:8 «<http://e/g1>» meta.directive.graph.ldpy string.quoted.other.iriref.ldpy
+34:22 «as» meta.directive.graph.ldpy keyword.control.flow.python
+34:25 «named» meta.directive.graph.ldpy
+
+35:1 «@graph» meta.directive.graph.ldpy keyword.other.graph.ldpy
+35:8 «self» meta.directive.graph.ldpy variable.language.special.self.python
+35:12 «.» meta.directive.graph.ldpy meta.member.access.python punctuation.separator.period.python
+35:13 «store» meta.directive.graph.ldpy meta.member.access.python meta.attribute.python
+
+36:1 «global» meta.directive.graph.ldpy storage.modifier.declaration.python
+36:8 «@graph» meta.directive.graph.ldpy keyword.other.graph.ldpy
+36:15 «as» meta.directive.graph.ldpy keyword.control.flow.python
+36:18 «chosen» meta.directive.graph.ldpy
+
+37:1 «nonlocal» meta.directive.bindings.ldpy storage.modifier.declaration.python
+37:10 «@bindings» meta.directive.bindings.ldpy keyword.other.bindings.ldpy
+37:20 «sol» meta.directive.bindings.ldpy
+
+38:1 «@bindings» meta.directive.bindings.ldpy keyword.other.bindings.ldpy
+38:11 «as» meta.directive.bindings.ldpy keyword.control.flow.python
+38:14 «b» meta.directive.bindings.ldpy
+
+39:1 «+» storage.type.addremove.ldpy
+39:2 «{» punctuation.definition.addremove.begin.ldpy
+39:4 «ex» entity.name.type.pname.prefix.ldpy
+39:6 «:» punctuation.separator.pname.ldpy
+39:7 «s» entity.name.other.pname.local.ldpy
+39:9 «ex» entity.name.type.pname.prefix.ldpy
+39:11 «:» punctuation.separator.pname.ldpy
+39:12 «p» entity.name.other.pname.local.ldpy
+39:14 «1» constant.numeric.ldpy
+39:16 «;» punctuation.separator.triples.ldpy
+39:18 «ex» entity.name.type.pname.prefix.ldpy
+39:20 «:» punctuation.separator.pname.ldpy
+39:21 «q» entity.name.other.pname.local.ldpy
+39:23 «"» string.quoted.single.python punctuation.definition.string.begin.python
+39:24 «deux» string.quoted.single.python
+39:28 «"» string.quoted.single.python punctuation.definition.string.end.python
+39:29 «@» punctuation.definition.langtag.ldpy
+39:30 «fr» constant.other.langtag.ldpy
+39:33 «}» punctuation.definition.addremove.end.ldpy
+
+40:1 «-» storage.type.addremove.ldpy
+40:2 «{» punctuation.definition.addremove.begin.ldpy
+40:4 «ex» entity.name.type.pname.prefix.ldpy
+40:6 «:» punctuation.separator.pname.ldpy
+40:7 «s» entity.name.other.pname.local.ldpy
+40:9 «ex» entity.name.type.pname.prefix.ldpy
+40:11 «:» punctuation.separator.pname.ldpy
+40:12 «p» entity.name.other.pname.local.ldpy
+40:14 «?any» variable.other.sparql.ldpy
+40:19 «}» punctuation.definition.addremove.end.ldpy
+40:20 «(» punctuation.parenthesis.begin.python
+40:21 «autre» -
+40:26 «)» punctuation.parenthesis.end.python
+
+41:1 «sensors» -
+41:9 «=» keyword.operator.assignment.python
+41:11 «list» meta.function-call.python support.type.python
+41:15 «(» meta.function-call.python punctuation.definition.arguments.begin.python
+41:16 «m» meta.function-call.python meta.function-call.arguments.python storage.type.match.ldpy
+41:17 «{» meta.function-call.python meta.function-call.arguments.python punctuation.definition.match.begin.ldpy
+41:19 «?s» meta.function-call.python meta.function-call.arguments.python variable.other.sparql.ldpy
+41:22 «a» meta.function-call.python meta.function-call.arguments.python keyword.other.rdf-type.ldpy
+41:24 «ex» meta.function-call.python meta.function-call.arguments.python entity.name.type.pname.prefix.ldpy
+41:26 «:» meta.function-call.python meta.function-call.arguments.python punctuation.separator.pname.ldpy
+41:27 «Sensor» meta.function-call.python meta.function-call.arguments.python entity.name.other.pname.local.ldpy
+41:34 «;» meta.function-call.python meta.function-call.arguments.python punctuation.separator.triples.ldpy
+41:36 «ex» meta.function-call.python meta.function-call.arguments.python entity.name.type.pname.prefix.ldpy
+41:38 «:» meta.function-call.python meta.function-call.arguments.python punctuation.separator.pname.ldpy
+41:39 «v» meta.function-call.python meta.function-call.arguments.python entity.name.other.pname.local.ldpy
+41:41 «?v» meta.function-call.python meta.function-call.arguments.python variable.other.sparql.ldpy
+41:44 «}» meta.function-call.python meta.function-call.arguments.python punctuation.definition.match.end.ldpy
+41:45 «)» meta.function-call.python punctuation.definition.arguments.end.python
+
+42:1 «rows» -
+42:6 «=» keyword.operator.assignment.python
+42:8 «[» punctuation.definition.list.begin.python
+42:9 «tuple» meta.function-call.python support.type.python
+42:14 «(» meta.function-call.python punctuation.definition.arguments.begin.python
+42:15 «r» meta.function-call.python meta.function-call.arguments.python
+42:16 «)» meta.function-call.python punctuation.definition.arguments.end.python
+42:18 «for» keyword.control.flow.python
+42:22 «r» -
+42:24 «in» keyword.control.flow.python
+42:27 «s» storage.type.sparql.ldpy
+42:28 «{» punctuation.definition.sparql.begin.ldpy
+42:30 «SELECT» keyword.control.sparql.ldpy
+42:37 «?s» variable.other.sparql.ldpy
+42:40 «WHERE» keyword.control.sparql.ldpy
+42:46 «{» punctuation.section.group.sparql.begin.ldpy
+42:48 «?s» variable.other.sparql.ldpy
+42:51 «a» keyword.control.sparql.ldpy
+42:53 «{» punctuation.section.group.sparql.begin.ldpy
+42:54 «cls» -
+42:57 «}» punctuation.section.group.sparql.end.ldpy
+42:59 «.» punctuation.separator.triples.ldpy
+42:61 «{» punctuation.section.group.sparql.begin.ldpy
+42:63 «SELECT» keyword.control.sparql.ldpy
+42:70 «?s» variable.other.sparql.ldpy
+42:73 «WHERE» keyword.control.sparql.ldpy
+42:79 «{» punctuation.section.group.sparql.begin.ldpy
+42:81 «?s» variable.other.sparql.ldpy
+42:84 «?p» variable.other.sparql.ldpy
+42:87 «?o» variable.other.sparql.ldpy
+42:90 «}» punctuation.section.group.sparql.end.ldpy
+42:92 «}» punctuation.section.group.sparql.end.ldpy
+42:94 «}» punctuation.section.group.sparql.end.ldpy
+42:96 «}» punctuation.definition.sparql.end.ldpy
+42:97 «]» punctuation.definition.list.end.python
+
+43:1 «for» keyword.control.flow.python
+43:5 «@bindings» keyword.other.bindings.ldpy
+43:15 «as» keyword.control.flow.python
+43:18 «row» variable.other.ldpy
+43:22 «in» keyword.control.flow.python
+43:25 «m» storage.type.match.ldpy
+43:26 «{» punctuation.definition.match.begin.ldpy
+43:28 «?s» variable.other.sparql.ldpy
+43:31 «ex» entity.name.type.pname.prefix.ldpy
+43:33 «:» punctuation.separator.pname.ldpy
+43:34 «reading» entity.name.other.pname.local.ldpy
+43:42 «?v» variable.other.sparql.ldpy
+43:45 «}» punctuation.definition.match.end.ldpy
+43:46 «:» punctuation.separator.colon.python
+
+44:5 «+» storage.type.addremove.ldpy
+44:6 «{» punctuation.definition.addremove.begin.ldpy
+44:8 «?s» variable.other.sparql.ldpy
+44:11 «ex» entity.name.type.pname.prefix.ldpy
+44:13 «:» punctuation.separator.pname.ldpy
+44:14 «hasValue» entity.name.other.pname.local.ldpy
+44:23 «e» storage.type.sparql-expr.ldpy
+44:24 «{» punctuation.definition.sparql-expr.begin.ldpy
+44:26 «?v» variable.other.sparql.ldpy
+44:29 «*» keyword.operator.arithmetic.python
+44:31 «2» constant.numeric.dec.python
+44:33 «}» punctuation.definition.sparql-expr.end.ldpy
+44:35 «}» punctuation.definition.addremove.end.ldpy
+

@@ -10,7 +10,17 @@
  *
  * - `<iri>`, `f<`, `e<` : contexte opérande (R1) — `<` n'y est jamais du
  *   Python valide ; `a<b>c` (comparaison chaînée) reste du Python.
- * - `g{`, `f{`, `e{`, `?{` : NAME{ collé n'est jamais du Python valide (R2).
+ * - `g{`, `f{`, `e{`, `s{`, `m{`, `?{` : NAME{ collé n'est jamais du Python
+ *   valide (R2). `s{…}` colore du SPARQL (accolades internes équilibrées) ;
+ *   `m{…}` colore comme un graphe (BGP à variables).
+ * - `+{`, `-{` en tête de ligne : îlots d'ajout/retrait (fiche 014) — du
+ *   Python légal mais sémantiquement mort, la capture ne coûte rien.
+ * - `@graph`/`@bindings` en tête de ligne suivis d'un opérande (fiche 014/017),
+ *   avec `global`/`nonlocal` en modificateur (fiche 018) ; un décorateur
+ *   (`@graph` nu, `@graph(...)`, `@graph.attr`) reste un décorateur.
+ * - `for @bindings [as b] in …` (fiche 017) : `for @` n'est jamais du Python.
+ * - `from m import brick:, u: as v:` (fiche 013) : un pname dans une liste
+ *   d'import n'est jamais du Python valide.
  * - `?var`, `$var` : jamais du Python valide.
  * - `"…"@lang`, `"…"^^dt` collés : jamais du Python valide (R2).
  * - pname `ex:local` et bnode `_:b` : SEULEMENT après `=` d'affectation,
@@ -157,7 +167,47 @@ const islands = {
     'ldpy-base': directive('base', String.raw`(?=\s+<)`),
 
     'ldpy-graph': braceIsland('#ldpy-graph-content', 'g', 'graph'),
+    'ldpy-match': braceIsland('#ldpy-graph-content', 'm', 'match'),
+    'ldpy-sparql': braceIsland('#ldpy-sparql-content', 's', 'sparql'),
     'ldpy-enode': braceIsland('#expression', 'e', 'sparql-expr'),
+
+    // +{ … } / -{ … } : ajout/retrait sur le graphe courant (fiche 014),
+    // en tête de ligne logique uniquement.
+    'ldpy-addremove': {
+        begin: String.raw`^\s*([+-])(\{)`,
+        end: String.raw`\}`,
+        beginCaptures: {
+            1: { name: 'storage.type.addremove.ldpy' },
+            2: { name: 'punctuation.definition.addremove.begin.ldpy' },
+        },
+        endCaptures: { 0: { name: 'punctuation.definition.addremove.end.ldpy' } },
+        patterns: [inc('#ldpy-graph-content')],
+    },
+
+    // @graph / @bindings (fiches 014/017), modificateur global/nonlocal
+    // (fiche 018). Un décorateur (@graph nu, @graph(...), @graph.attr)
+    // reste un décorateur : garde sur l'opérande qui suit.
+    'ldpy-graph-decl': contextDecl('graph'),
+    'ldpy-bindings-decl': contextDecl('bindings'),
+
+    // for @bindings [as b] in … (fiche 017)
+    'ldpy-for-bindings': {
+        match: String.raw`(?<=\bfor\s)\s*(@bindings)\b(?:\s+(as)\s+([A-Za-z_]\w*))?`,
+        captures: {
+            1: { name: 'keyword.other.bindings.ldpy' },
+            2: { name: 'keyword.control.flow.python' },
+            3: { name: 'variable.other.ldpy' },
+        },
+    },
+
+    // pname dans une liste d'import (fiche 013) : brick:, unit: as u:
+    'ldpy-import-prefix': {
+        match: String.raw`([A-Za-z_][\w.-]*)?(:)(?=\s*[,)\n#]|\s+as\b|\s*$)`,
+        captures: {
+            1: { name: 'entity.name.type.pname.prefix.ldpy' },
+            2: { name: 'punctuation.separator.pname.ldpy' },
+        },
+    },
     'ldpy-fnode': {
         begin: String.raw`(\bf|\?)(\{)`,
         end: String.raw`\}`,
@@ -282,6 +332,65 @@ const islands = {
     },
 };
 
+// Intérieur d'un s{…} : coloration SPARQL légère, accolades équilibrées.
+islands['ldpy-sparql-content'] = {
+    patterns: [
+        inc('#comments'),
+        { match: String.raw`\b(?i:select|construct|describe|ask|where|from|named|order|by|group|having|limit|offset|distinct|reduced|optional|union|minus|graph|service|silent|filter|bind|values|insert|delete|data|with|using|load|clear|drop|create|copy|move|add|exists|not|in|as|a)\b`,
+          name: 'keyword.control.sparql.ldpy' },
+        inc('#ldpy-sparql-var'),
+        { match: IRIREF, name: 'string.quoted.other.iriref.ldpy' },
+        {
+            match: String.raw`([A-Za-z_]\w*)?(:)([A-Za-z0-9_][\w.-]*)?`,
+            captures: {
+                1: { name: 'entity.name.type.pname.prefix.ldpy' },
+                2: { name: 'punctuation.separator.pname.ldpy' },
+                3: { name: 'entity.name.other.pname.local.ldpy' },
+            },
+        },
+        inc('#string'),
+        { match: String.raw`[+-]?\d+(\.\d+)?([eE][+-]?\d+)?`,
+          name: 'constant.numeric.ldpy' },
+        {
+            begin: String.raw`\{`,
+            end: String.raw`\}`,
+            beginCaptures: { 0: { name: 'punctuation.section.group.sparql.begin.ldpy' } },
+            endCaptures: { 0: { name: 'punctuation.section.group.sparql.end.ldpy' } },
+            patterns: [inc('#ldpy-sparql-content')],
+        },
+        { match: '[;,.]', name: 'punctuation.separator.triples.ldpy' },
+    ],
+};
+
+// déclaration de contexte @graph/@bindings — garde : un opérande suit
+// (pas `(`, `.`, `[` ni fin de ligne, qui restent un décorateur).
+function contextDecl(keyword) {
+    return {
+        name: `meta.directive.${keyword}.ldpy`,
+        begin: String.raw`^\s*(?:(global|nonlocal)\s+)?(@` + keyword +
+            String.raw`)(?=\s+[^\s(.\[#])`,
+        end: String.raw`(?=\n|#)`,
+        beginCaptures: {
+            1: { name: 'storage.modifier.declaration.python' },
+            2: { name: `keyword.other.${keyword}.ldpy` },
+        },
+        patterns: [
+            { match: String.raw`\bas\b`, name: 'keyword.control.flow.python' },
+            { match: IRIREF, name: 'string.quoted.other.iriref.ldpy' },
+            inc('#ldpy-firi'),
+            {
+                match: String.raw`([A-Za-z_][\w.-]*)(:)([A-Za-z0-9_][\w.-]*)`,
+                captures: {
+                    1: { name: 'entity.name.type.pname.prefix.ldpy' },
+                    2: { name: 'punctuation.separator.pname.ldpy' },
+                    3: { name: 'entity.name.other.pname.local.ldpy' },
+                },
+            },
+            inc('#expression'),
+        ],
+    };
+}
+
 Object.assign(R, islands);
 
 // ------------------------------------------------------------- injections
@@ -296,14 +405,24 @@ function insertBefore(patterns, anchorInclude, includes) {
 
 // directives @prefix/@base avant les décorateurs
 insertBefore(R.statement.patterns, '#decorator', ['#ldpy-base', '#ldpy-prefix']);
+// îlots-instructions +{ }/-{ } et déclarations de contexte (dont la forme
+// global/nonlocal, fiche 018) : en tête, avant le mot-clé global de
+// MagicPython — la garde @graph/@bindings protège le Python pur.
+R.statement.patterns.unshift(inc('#ldpy-addremove'),
+    inc('#ldpy-graph-decl'), inc('#ldpy-bindings-decl'));
 
 // îlots en tête des expressions
 R['expression-bare'].patterns.unshift(...[
-    '#ldpy-graph', '#ldpy-enode', '#ldpy-firi-op', '#ldpy-eiri-op',
+    '#ldpy-graph', '#ldpy-match', '#ldpy-sparql', '#ldpy-enode',
+    '#ldpy-for-bindings', '#ldpy-firi-op', '#ldpy-eiri-op',
     '#ldpy-fnode', '#ldpy-sparql-var', '#ldpy-literal-suffix',
     '#ldpy-iriref', '#ldpy-bnode', '#ldpy-pname',
 ].map(inc));
 insertBefore(R['expression-bare'].patterns, '#list', ['#ldpy-subscript-guard']);
+
+// pname dans la liste d'un import (fiche 013)
+insertBefore(R['import'].patterns[1].patterns, '#expression',
+    ['#ldpy-import-prefix']);
 
 // pname/bnode en position d'élément (appel, liste, parenthèses)
 for (const key of ['function-arguments', 'list', 'round-braces']) {
