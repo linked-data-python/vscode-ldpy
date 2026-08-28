@@ -3,7 +3,25 @@
 	"displayName": "Linked-Data Python",
 	"description": "Linked-Data Python (.ldpy) : coloration, diagnostics, complétion, hover, définition (serveur LSP ldpy), exécution et débogage.",
 	"icon": "ldpyIcon.png",
-	"repository": "gitlab:coswot/vscode-ldpy",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://gitlab.emse.fr/maxime.lefrancois/vscode-ldpy.git"
+	},
+	"homepage": "https://linked-data-python.readthedocs.io/",
+	"bugs": {
+		"url": "https://gitlab.emse.fr/maxime.lefrancois/vscode-ldpy/-/issues"
+	},
+	"qna": false,
+	"keywords": [
+		"rdf",
+		"turtle",
+		"sparql",
+		"semantic web",
+		"knowledge graph",
+		"linked data",
+		"ldpy"
+	],
 	"publisher": "MaximeLefrancois",
 	"version": "0.2.0",
 	"main": "./out/extension.js",
@@ -12,8 +30,12 @@
 	},
 	"categories": [
 		"Programming Languages",
-		"Debuggers"
+		"Debuggers",
+		"Formatters",
+		"Linters"
 	],
+	"extensionDependencies": [],
+	"extensionPack": [],
 	"contributes": {
 		"languages": [
 			{
@@ -124,19 +146,46 @@
 		"commands": [
 			{
 				"command": "ldpy.run",
-				"title": "ldpy: Run current file"
+				"title": "Run File",
+				"category": "ldpy",
+				"icon": "$(play)"
 			},
 			{
 				"command": "ldpy.debug",
-				"title": "ldpy: Debug current file (shadow)"
+				"title": "Debug File",
+				"category": "ldpy",
+				"icon": "$(debug-alt)"
 			},
 			{
-				"command": "ldpy.showShadow",
-				"title": "ldpy: Show transpiled Python (shadow)"
+				"command": "ldpy.showTranspiled",
+				"title": "Show Transpiled Python",
+				"category": "ldpy",
+				"icon": "$(open-preview)"
+			},
+			{
+				"command": "ldpy.formatWorkspace",
+				"title": "Format All .ldpy Files in Workspace",
+				"category": "ldpy"
 			},
 			{
 				"command": "ldpy.restartServer",
-				"title": "ldpy: Restart language server"
+				"title": "Restart Language Server",
+				"category": "ldpy"
+			},
+			{
+				"command": "ldpy.showServerOutput",
+				"title": "Show Language Server Log",
+				"category": "ldpy"
+			},
+			{
+				"command": "ldpy.selectInterpreter",
+				"title": "Select Python Interpreter",
+				"category": "ldpy"
+			},
+			{
+				"command": "ldpy.openDocumentation",
+				"title": "Open Documentation",
+				"category": "ldpy"
 			}
 		],
 		"configuration": {
@@ -144,8 +193,9 @@
 			"properties": {
 				"ldpy.pythonPath": {
 					"type": "string",
-					"default": "python3",
-					"description": "Interpréteur Python qui porte le paquet ldpy (serveur LSP, build, debug)."
+					"default": "",
+					"scope": "machine-overridable",
+					"markdownDescription": "Interpréteur Python qui porte le paquet `linked-data-python` (serveur de langage, exécution, débogage, formatage). **Vide** = celui de l'extension Python, sinon `python3`. Un chemin absolu ne se synchronise pas entre machines."
 				},
 				"ldpy.backend": {
 					"type": "string",
@@ -153,13 +203,38 @@
 						"pylsp",
 						"none"
 					],
+					"enumDescriptions": [
+						"Délègue complétion, définition et références à python-lsp-server.",
+						"Couche native seule : diagnostics et coloration des îlots."
+					],
 					"default": "pylsp",
-					"description": "Serveur LSP Python délégué pour la complétion/définition (request forwarding)."
+					"scope": "window",
+					"description": "Serveur de langage Python auquel déléguer les questions qui portent sur le Python (request forwarding)."
 				},
 				"ldpy.buildDirectory": {
 					"type": "string",
 					"default": ".ldpy-build",
-					"description": "Répertoire des fichiers Python fantômes (build/debug)."
+					"scope": "resource",
+					"description": "Répertoire des fichiers Python générés (« Show Transpiled Python », ldpy build)."
+				},
+				"ldpy.lineLength": {
+					"type": "number",
+					"default": 88,
+					"minimum": 40,
+					"maximum": 320,
+					"scope": "resource",
+					"markdownDescription": "Longueur de ligne du formateur. Nécessite `pip install \"linked-data-python[format]\"`."
+				},
+				"ldpy.trace.server": {
+					"type": "string",
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"default": "off",
+					"scope": "window",
+					"description": "Trace les échanges avec le serveur de langage dans le canal « ldpy » — à activer pour un rapport de bug, pas au quotidien."
 				}
 			}
 		},
@@ -174,8 +249,51 @@
 					"when": "editorLangId == ldpy"
 				},
 				{
-					"command": "ldpy.showShadow",
+					"command": "ldpy.showTranspiled",
 					"when": "editorLangId == ldpy"
+				}
+			],
+			"editor/title/run": [
+				{
+					"command": "ldpy.run",
+					"when": "editorLangId == ldpy",
+					"group": "navigation@1"
+				},
+				{
+					"command": "ldpy.debug",
+					"when": "editorLangId == ldpy",
+					"group": "navigation@2"
+				}
+			],
+			"editor/title": [
+				{
+					"command": "ldpy.showTranspiled",
+					"when": "editorLangId == ldpy",
+					"group": "navigation"
+				}
+			],
+			"editor/context": [
+				{
+					"command": "ldpy.run",
+					"when": "editorLangId == ldpy",
+					"group": "ldpy@1"
+				},
+				{
+					"command": "ldpy.debug",
+					"when": "editorLangId == ldpy",
+					"group": "ldpy@2"
+				},
+				{
+					"command": "ldpy.showTranspiled",
+					"when": "editorLangId == ldpy",
+					"group": "ldpy@3"
+				}
+			],
+			"explorer/context": [
+				{
+					"command": "ldpy.run",
+					"when": "resourceExtname == .ldpy",
+					"group": "ldpy@1"
 				}
 			]
 		}
@@ -195,8 +313,12 @@
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"generate": "node syntaxes/generate.js",
-		"test": "node test/parity.js",
-		"vscode:prepublish": "npm run compile"
+		"test": "node test/parity.js && node test/contributes.js",
+		"lint": "tsc -p ./ --noEmit",
+		"package": "npx --yes @vscode/vsce package",
+		"publish": "npx --yes @vscode/vsce publish",
+		"publish:ovsx": "npx --yes ovsx publish",
+		"vscode:prepublish": "npm run compile && npm test"
 	},
 	"dependencies": {
 		"vscode-languageclient": "^9.0.1"

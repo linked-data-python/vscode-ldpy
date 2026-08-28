@@ -2,7 +2,30 @@
 
 All notable changes to the "linked-data-python" extension will be documented in this file.
 
-## [Non publié]
+## [0.2.0] — en préparation
+
+- **Formatage** : « Format Document » et le formatage à l'enregistrement,
+  fournis par le serveur (`textDocument/formatting`) ; réglage
+  `ldpy.lineLength` ; commande « Format All .ldpy Files in Workspace ».
+  Nécessite `pip install "linked-data-python[format]"`.
+- **Débogage : la correspondance est garantie** (fiche vscode/103). Le
+  lanceur `-m ldpy.debug` n'apparaît plus dans la pile d'appels et n'attrape
+  plus le pas qui suit la dernière ligne ; `step in` sur un îlot n'entre dans
+  le runtime que si `justMyCode` est à `false` ; un point d'arrêt posé dans un
+  îlot multiligne — qui ne pouvait pas se lier — est **déplacé** sur la
+  première ligne de l'îlot au lieu de rester rouge et muet.
+- **Surface revue** (fiche vscode/105) : huit commandes sous la catégorie
+  `ldpy`, boutons ▷ et aperçu dans le titre de l'éditeur, menus contextuels,
+  **aucun raccourci clavier par défaut** ; cinq réglages, tous avec une portée
+  explicite ; `ldpy.pythonPath` a désormais pour défaut la chaîne vide
+  (= interpréteur de l'extension Python), et `python` plutôt que `python3` en
+  dernier recours sous Windows ; changer un réglage redémarre le serveur.
+- **Barre d'état** : version de `linked-data-python` trouvée, interpréteur et
+  chemin du paquet en infobulle, clic pour changer d'interpréteur. Les
+  messages distinguent « paquet absent » de « paquet trop ancien ».
+- `ldpy.showShadow` devient `ldpy.showTranspiled`.
+- Documentation : `README.md` réécrit (c'est la page de marché),
+  `PUBLISHING.md` et `DEVELOPMENT.md` remplacent `HOW_TO.md`.
 
 - Coloration des constructions des fiches 013-020 : `s{ }` (SPARQL léger,
   accolades équilibrées, interpolations re-basculées en Python), `m{ }`,

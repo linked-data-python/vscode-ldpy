@@ -1,4 +1,20 @@
+# Ce qui NE PART PAS dans le .vsix. `vsce ls` affiche ce qui reste.
+# Règle : l'extension publiée contient out/, les grammaires, les icônes et
+# la documentation d'accueil — rien de ce qui sert à la produire.
 .vscode/**
 .vscode-test/**
 .gitignore
+.gitattributes
+.pytest_cache/**
+src/**
+tsconfig.json
+test/**
+demo/**
+syntaxes/generate.js
+syntaxes/highlight-pkg.js
+syntaxes/upstream/**
 vsc-extension-quickstart.md
+PUBLISHING.md
+DEVELOPMENT.md
+**/*.map
+**/.DS_Store

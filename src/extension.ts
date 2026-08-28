@@ -14,8 +14,11 @@
  * - Points d'arrêt : celui posé DANS un îlot multiligne ne peut pas se lier
  *   (l'îlot s'effondre en une instruction) ; on le déplace visiblement sur
  *   la première ligne de l'îlot, via la requête LSP `ldpy/breakpointLines`.
- * - `ldpy: Run current file`   : exécute via `python -m ldpy` dans un terminal.
- * - `ldpy: Show transpiled Python (shadow)` : ouvre le fantôme à côté.
+ * - Formatage : fourni par le serveur (`textDocument/formatting`), donc
+ *   « Format Document » et `editor.formatOnSave` marchent sans rien de plus.
+ * - Commandes, menus et réglages : fiche vscode/105. Aucun raccourci clavier
+ *   par défaut — les touches appartiennent à l'utilisateur ; les gestes
+ *   fréquents passent par le bouton ▷ du titre de l'éditeur.
  * - Interpréteur : ldpy.pythonPath s'il est réglé, sinon l'interpréteur
  *   actif de l'extension Python, sinon `python3`.
  */
@@ -27,23 +30,50 @@ import {
 } from 'vscode-languageclient/node';
 
 let client: LanguageClient | undefined;
+let status: vscode.StatusBarItem | undefined;
+let output: vscode.OutputChannel | undefined;
 /** Vrai pendant qu'on remplace des points d'arrêt (anti-réentrance). */
 let snapping = false;
+
+/**
+ * « Quel interpréteur ? » est la première question quand rien ne marche —
+ * l'extension la répond en permanence plutôt qu'à la demande. Un clic ouvre
+ * le réglage.
+ */
+function showStatus(text: string, tooltip: string, warn = false) {
+    if (!status) { return; }
+    status.text = `$(circuit-board) ldpy: ${text}`;
+    status.tooltip = tooltip;
+    status.backgroundColor = warn
+        ? new vscode.ThemeColor('statusBarItem.warningBackground')
+        : undefined;
+    status.command = 'ldpy.selectInterpreter';
+}
+
+function updateStatusVisibility(editor?: vscode.TextEditor) {
+    const doc = (editor ?? vscode.window.activeTextEditor)?.document;
+    if (doc?.languageId === 'ldpy') { status?.show(); } else { status?.hide(); }
+}
 
 function config() {
     const c = vscode.workspace.getConfiguration('ldpy');
     return {
         backend: c.get<string>('backend', 'pylsp'),
         buildDir: c.get<string>('buildDirectory', '.ldpy-build'),
+        lineLength: c.get<number>('lineLength', 88),
     };
 }
 
-/** Interpréteur Python : réglage explicite > extension Python > python3. */
+/**
+ * Interpréteur Python : réglage explicite > extension Python > `python3`.
+ *
+ * Le réglage a pour défaut la chaîne VIDE (fiche vscode/105) : « non réglé »
+ * devient ainsi une valeur, et non une valeur qu'il faut deviner en
+ * interrogeant les portées de configuration.
+ */
 async function resolvePython(): Promise<string> {
     const c = vscode.workspace.getConfiguration('ldpy');
-    const insp = c.inspect<string>('pythonPath');
-    const explicit = insp?.workspaceFolderValue ?? insp?.workspaceValue
-        ?? insp?.globalValue;
+    const explicit = c.get<string>('pythonPath', '').trim();
     if (explicit) { return explicit; }
     try {
         const ext = vscode.extensions.getExtension('ms-python.python');
@@ -54,7 +84,7 @@ async function resolvePython(): Promise<string> {
             if (p) { return p; }
         }
     } catch { /* on retombe sur le défaut */ }
-    return c.get<string>('pythonPath', 'python3');
+    return process.platform === 'win32' ? 'python' : 'python3';
 }
 
 /** Ce que `python -m ldpy.debug --probe` rapporte sur un interpréteur. */
@@ -84,14 +114,49 @@ function probeLdpy(python: string): Promise<LdpyProbe | undefined> {
     });
 }
 
+/** Le paquet est-il seulement importable ? (pour distinguer les pannes) */
+function ldpyImportable(python: string): Promise<boolean> {
+    return new Promise((resolve) => {
+        cp.execFile(python, ['-c', 'import ldpy'],
+            { timeout: 20000 }, (err) => resolve(!err));
+    });
+}
+
+/**
+ * Dit ce qui manque, précisément. « Paquet introuvable » quand le paquet est
+ * là mais trop vieux est un message qui fait perdre une demi-heure.
+ */
+async function explainMissingLdpy(python: string): Promise<string> {
+    if (await ldpyImportable(python)) {
+        return `ldpy : le paquet installé pour « ${python} » est antérieur à ` +
+            "cette extension (pas de `ldpy.debug --probe`). " +
+            'Mettre à jour : pip install -U "linked-data-python[lsp,debug,format]".';
+    }
+    return `ldpy : paquet introuvable pour « ${python} ». ` +
+        'Installer linked-data-python dans cet environnement ' +
+        '(pip install "linked-data-python[lsp,debug,format]") ' +
+        'ou régler ldpy.pythonPath.';
+}
+
 async function startClient(context: vscode.ExtensionContext) {
-    const { backend } = config();
+    const { backend, lineLength } = config();
+    const python = await resolvePython();
+    const probe = await probeLdpy(python);
+    if (!probe) {
+        showStatus('non installé', await explainMissingLdpy(python), true);
+        throw new Error(await explainMissingLdpy(python));
+    }
+    showStatus(probe.version ?? 'prêt',
+        `linked-data-python ${probe.version ?? '?'}\n${probe.package}\n` +
+        `interpréteur : ${python}`);
     const serverOptions: ServerOptions = {
-        command: await resolvePython(),
-        args: ['-m', 'ldpy.lsp', '--backend', backend],
+        command: python,
+        args: ['-m', 'ldpy.lsp', '--backend', backend,
+            '--line-length', String(lineLength)],
     };
     const clientOptions: LanguageClientOptions = {
         documentSelector: [{ language: 'ldpy' }],
+        outputChannel: output,
     };
     client = new LanguageClient('ldpy', 'Linked-Data Python',
         serverOptions, clientOptions);
@@ -155,10 +220,7 @@ class LdpyDebugConfigurationProvider
         const python = cfg.python ?? await resolvePython();
         const probe = await probeLdpy(python);
         if (!probe) {
-            vscode.window.showErrorMessage(
-                `ldpy : paquet introuvable pour « ${python} ». ` +
-                'Installer linked-data-python dans cet environnement ou ' +
-                'régler ldpy.pythonPath.');
+            vscode.window.showErrorMessage(await explainMissingLdpy(python));
             return null;
         }
 
@@ -269,6 +331,50 @@ function shadowInfo(python: string, file: string, buildDir: string):
     });
 }
 
+/** Formate tous les .ldpy de l'espace de travail — ce que « Format Document »
+ * ne sait pas faire, et la seule raison d'ajouter une commande de formatage. */
+async function formatWorkspace() {
+    const files = await vscode.workspace.findFiles(
+        '**/*.ldpy', '**/{node_modules,.venv,.ldpy-build,site}/**');
+    if (!files.length) {
+        vscode.window.showInformationMessage('ldpy : aucun fichier .ldpy.');
+        return;
+    }
+    let changed = 0;
+    await vscode.window.withProgress({
+        location: vscode.ProgressLocation.Notification,
+        title: `ldpy : formatage de ${files.length} fichier(s)…`,
+    }, async () => {
+        for (const uri of files) {
+            const doc = await vscode.workspace.openTextDocument(uri);
+            const edits = await vscode.commands.executeCommand<
+                vscode.TextEdit[]>('vscode.executeFormatDocumentProvider',
+                    uri, { tabSize: 4, insertSpaces: true });
+            if (!edits?.length) { continue; }
+            const edit = new vscode.WorkspaceEdit();
+            edit.set(uri, edits);
+            if (await vscode.workspace.applyEdit(edit)) {
+                await doc.save();
+                changed++;
+            }
+        }
+    });
+    vscode.window.showInformationMessage(
+        `ldpy : ${changed} fichier(s) reformaté(s) sur ${files.length}.`);
+}
+
+/** Le sélecteur de l'extension Python quand elle est là — sinon le réglage. */
+async function selectInterpreter() {
+    if (vscode.extensions.getExtension('ms-python.python')) {
+        try {
+            await vscode.commands.executeCommand('python.setInterpreter');
+            return;
+        } catch { /* la commande a changé de nom : on retombe */ }
+    }
+    await vscode.commands.executeCommand('workbench.action.openSettings',
+        'ldpy.pythonPath');
+}
+
 async function debugCurrentFile() {
     const editor = vscode.window.activeTextEditor;
     if (!editor || editor.document.languageId !== 'ldpy') { return; }
@@ -309,13 +415,36 @@ async function runCurrentFile() {
 
 export async function activate(context: vscode.ExtensionContext) {
     const provider = new LdpyDebugConfigurationProvider();
+    output = vscode.window.createOutputChannel('ldpy');
+    status = vscode.window.createStatusBarItem(
+        vscode.StatusBarAlignment.Right, 100);
     context.subscriptions.push(
+        status, output,
+        vscode.window.onDidChangeActiveTextEditor(updateStatusVisibility),
+        vscode.commands.registerCommand('ldpy.selectInterpreter',
+            selectInterpreter),
         vscode.commands.registerCommand('ldpy.run', runCurrentFile),
         vscode.commands.registerCommand('ldpy.debug', debugCurrentFile),
-        vscode.commands.registerCommand('ldpy.showShadow', showShadow),
+        vscode.commands.registerCommand('ldpy.showTranspiled', showShadow),
+        vscode.commands.registerCommand('ldpy.formatWorkspace', formatWorkspace),
+        vscode.commands.registerCommand('ldpy.showServerOutput',
+            () => output?.show(true)),
+        vscode.commands.registerCommand('ldpy.openDocumentation',
+            () => vscode.env.openExternal(vscode.Uri.parse(
+                'https://linked-data-python.readthedocs.io/'))),
         vscode.commands.registerCommand('ldpy.restartServer', async () => {
             await client?.stop();
             await startClient(context);
+        }),
+        // Les réglages du serveur sont passés à son démarrage : les changer
+        // demande un redémarrage, qu'on fait ici plutôt que de le demander.
+        vscode.workspace.onDidChangeConfiguration(async (e) => {
+            if (e.affectsConfiguration('ldpy.backend')
+                || e.affectsConfiguration('ldpy.lineLength')
+                || e.affectsConfiguration('ldpy.pythonPath')) {
+                await client?.stop();
+                await startClient(context);
+            }
         }),
         vscode.debug.registerDebugConfigurationProvider('ldpy', provider),
         vscode.debug.registerDebugConfigurationProvider('ldpy', provider,
@@ -323,12 +452,11 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.debug.onDidChangeBreakpoints(
             e => { void snapBreakpoints([...e.added, ...e.changed]); }),
     );
+    updateStatusVisibility();
     try {
         await startClient(context);
     } catch (e) {
-        vscode.window.showWarningMessage(
-            `ldpy : serveur LSP indisponible (${(e as Error).message}). ` +
-            `Vérifier ldpy.pythonPath et \`pip install linked-data-python\`.`);
+        vscode.window.showWarningMessage((e as Error).message);
     }
 }
 
