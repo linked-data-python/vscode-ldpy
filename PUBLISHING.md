@@ -25,20 +25,34 @@ README envoie sur `pip install`.
 
 ### Visual Studio Marketplace
 
-1. Un compte Microsoft/Entra, puis une organisation Azure DevOps
-   (<https://dev.azure.com>) — n'importe laquelle, elle ne sert qu'à porter le
-   jeton.
+**Azure DevOps n'est pas le portail Azure.** `dev.azure.com` renvoie vers une
+page marketing quand le compte n'a aucune organisation, et se connecter depuis
+là mène à `portal.azure.com`, qui n'a rien à voir. L'URL qui liste vraiment
+vos organisations, tous annuaires confondus, est <https://aex.dev.azure.com/me>.
+
+L'organisation existante est **`maximelefrancoisemsefr`** ; le jeton se prend
+donc directement sur
+<https://dev.azure.com/maximelefrancoisemsefr/_usersSettings/tokens>.
+
+1. Une organisation Azure DevOps — n'importe laquelle, elle ne sert qu'à
+   porter le jeton, on n'y met jamais de code.
 2. *User settings → Personal access tokens → New token*
    - **Organization : « All accessible organizations »** (le piège classique :
      un jeton limité à une organisation est refusé par `vsce` avec un 401
      illisible) ;
    - **Scopes → Custom defined → Marketplace → Manage** ;
    - durée : un an maximum, à renoter dans l'agenda.
-3. Vérifier que le jeton parle bien à l'éditeur existant :
+3. Vérifier que le jeton donne bien les droits sur l'éditeur, avant de le
+   poser en secret :
 
    ```text
-   npx --yes @vscode/vsce login MaximeLefrancois
+   npx --yes @vscode/vsce verify-pat MaximeLefrancois
    ```
+
+   Si l'entrée *Personal access tokens* est absente ou grisée, c'est une
+   politique du tenant qui bloque leur création : créer alors l'organisation
+   sous un compte Microsoft personnel — l'éditeur Marketplace n'a pas besoin
+   d'être dans le même annuaire.
 
 ### Open VSX
 
@@ -52,6 +66,18 @@ Les deux jetons se rangent hors du dépôt. En local :
 export VSCE_PAT=…      # Visual Studio Marketplace
 export OVSX_PAT=…      # Open VSX
 ```
+
+## 1 bis. L'ordre compte : PyPI d'abord
+
+La version publiée en 2022 est la **0.0.1**, et elle compte **2 417
+installations**. Cette version-là ne faisait que colorer ; la 0.2.0 délègue au
+paquet Python le serveur de langage, le débogage et le formatage.
+
+Publier l'extension avant que `linked-data-python` 0.2.0 ne soit sur PyPI
+enverrait donc à 2 417 personnes une mise à jour dont la barre d'état annonce
+« paquet introuvable » et dont la moitié des fonctions échouent. **Publier
+`ldpy` sur PyPI d'abord, vérifier que `pip install linked-data-python==0.2.0`
+fonctionne, publier l'extension ensuite.**
 
 ## 2. La voie automatique : une étiquette
 
