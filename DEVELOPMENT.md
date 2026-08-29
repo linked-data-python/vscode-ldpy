@@ -20,7 +20,7 @@ modification côté Python.
 par `syntaxes/generate.js` à partir du MagicPython officiel de VS Code,
 vendoré dans `syntaxes/upstream/`. La doctrine — n'injecter les îlots que là
 où le Python pur ne peut pas aller — est dans l'en-tête du générateur et dans
-la fiche `DESIGN_CHOICES/vscode/102`.
+la [fiche `vscode/102`](https://github.com/linked-data-python/pilotage/blob/main/design/vscode/102-extension-vscode.md).
 
 ```text
 npm run generate       # regénère

@@ -6,11 +6,11 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://gitlab.emse.fr/maxime.lefrancois/vscode-ldpy.git"
+		"url": "https://github.com/linked-data-python/vscode-ldpy.git"
 	},
 	"homepage": "https://linked-data-python.readthedocs.io/",
 	"bugs": {
-		"url": "https://gitlab.emse.fr/maxime.lefrancois/vscode-ldpy/-/issues"
+		"url": "https://github.com/linked-data-python/vscode-ldpy/issues"
 	},
 	"qna": false,
 	"keywords": [

@@ -1,7 +1,7 @@
 'use strict';
 /**
  * Résout le paquet `linked-data-python-highlight` : la source UNIQUE des
- * règles d'îlot (DESIGN_CHOICES/ldpy/021). La grammaire `ldpy.tmLanguage.json`
+ * règles d'îlot (ldpy/021). La grammaire `ldpy.tmLanguage.json`
  * est engendrée par lui puis VENDORÉE ici — l'extension se construit et
  * s'installe sans lui ; seuls `npm run generate` et `npm test` en ont besoin.
  *

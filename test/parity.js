@@ -7,7 +7,7 @@
  *    peuvent référencer des captures du begin : backrefs substituées) ;
  * 3. PARITÉ : un fichier Python pur (test/fixtures/pure_*.py) reçoit
  *    exactement les mêmes scopes en .ldpy qu'avec MagicPython — au
- *    caractère près (fiche DESIGN_CHOICES/vscode/102) ;
+ *    caractère près (fiche vscode/102) ;
  * 4. îlots : golden sur test/fixtures/islands.ldpy
  *    (UPDATE_GOLDEN=1 npm test pour régénérer).
  */

@@ -9,7 +9,7 @@ const SYN = path.join(__dirname, '..', 'syntaxes');
 const { magicPythonPath } = require(path.join(SYN, 'highlight-pkg'));
 const GRAMMARS = {
     // MagicPython est vendoré par linked-data-python-highlight : un seul
-    // exemplaire dans l'espace de travail (DESIGN_CHOICES/ldpy/021).
+    // exemplaire dans l'espace de travail (ldpy/021).
     'source.python': magicPythonPath(),
     'source.ldpy': path.join(SYN, 'ldpy.tmLanguage.json'),
 };

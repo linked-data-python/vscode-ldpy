@@ -13,7 +13,7 @@ On reprend cette identité, on n'en crée pas une autre — l'`__metadata.id` du
 ## 0. Avant tout : ce qui n'est pas encore fait
 
 Le dépôt `vscode-ldpy` **n'a jamais été poussé** sur son remote
-`gitlab.emse.fr`. Le champ `repository` du `package.json` pointe vers une URL
+GitHub. Le champ `repository` du `package.json` pointe vers une URL
 qui n'existe pas encore ; le premier `git push -u origin main` revient à
 Maxime. **Publier avant ce push** donne une page de marché dont les liens
 « Repository » et « Issues » sont morts. Ordre recommandé : pousser, puis

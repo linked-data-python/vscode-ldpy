@@ -137,4 +137,11 @@ Bind the rest yourself, scoped to the language so nothing is stolen elsewhere:
 ## Licence
 
 MIT — see `LICENSE.md`. Source:
-<https://gitlab.emse.fr/maxime.lefrancois/vscode-ldpy>.
+<https://github.com/linked-data-python/vscode-ldpy>.
+
+## Design records
+
+Every non-trivial choice in this repository is written down, one file per
+decision, in the [`pilotage`](https://github.com/linked-data-python/pilotage) repository. Comments and docs
+cite them by identifier — `ldpy/024`, `vscode/103` — which resolves to
+[`design/`](https://github.com/linked-data-python/pilotage/tree/main/design).

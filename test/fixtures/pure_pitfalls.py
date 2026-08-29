@@ -1,4 +1,4 @@
-# Cas pièges de la fiche DESIGN_CHOICES/vscode/102 : TOUT ce fichier est du
+# Cas pièges de la fiche vscode/102 : TOUT ce fichier est du
 # Python syntaxiquement valide et doit être coloré à l'identique en .ldpy.
 a, b, c, d, i, j, k, v, x, y, ex, f, e, g, n = range(15)
 

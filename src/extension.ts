@@ -1,5 +1,5 @@
 /**
- * Extension VS Code Linked-Data Python (fiche DESIGN_CHOICES/vscode/102).
+ * Extension VS Code Linked-Data Python (fiche vscode/102).
  *
  * - Client LSP vers `python -m ldpy.lsp` (diagnostics, complétion, hover,
  *   définition, références, semantic tokens des îlots).
