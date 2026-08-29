@@ -2,7 +2,31 @@
 
 All notable changes to the "linked-data-python" extension will be documented in this file.
 
-## [0.2.0] — en préparation
+## [0.2.1] — 2026-08-29
+
+- **La barre d'état ne reste plus bloquée sur « non installé ».** Elle sondait
+  une fois, à l'activation, et jamais plus : installer le paquet à la main,
+  ou changer d'interpréteur, ne changeait rien à l'affichage. Trois manques,
+  tous corrigés — un paquet absent est désormais un ÉTAT et non une exception
+  levée (qui laissait le client jamais créé) ; la fenêtre qui reprend le focus
+  déclenche une nouvelle sonde tant que quelque chose ne va pas, ce qui ferme
+  la boucle du `pip install` fait dans un terminal ; et le changement
+  d'interpréteur de l'extension Python est écouté, alors qu'il n'est pas un
+  changement de NOS réglages.
+- **Cliquer sur la barre d'état ouvre un menu** : installer ici (en disant
+  dans quel interpréteur), choisir un autre interpréteur, resonder, voir le
+  journal. Un clic ne décide plus tout seul de l'environnement qui reçoit le
+  paquet — et après avoir choisi un interpréteur, le menu revient si le
+  nouveau n'est pas mieux loti.
+- **Installation et mise à jour depuis l'éditeur** (`ldpy: Install or Update…`),
+  sur accord modal explicite, jamais en silence : l'interpréteur appartient à
+  l'utilisateur. L'échec renvoie au journal plutôt que de disparaître.
+- **« Show transpiled Python » fonctionne** : le chemin du fantôme revenait
+  relatif et VS Code l'enracinait à `/` (`/.ldpy-build/x.py`). Corrigé côté
+  paquet (chemin absolu) et côté extension (résolution défensive).
+- Trois états distingués là où il n'y en avait qu'un : paquet absent, paquet
+  trop ancien, interpréteur injoignable — trois problèmes, trois issues.
+
 
 - **Formatage** : « Format Document » et le formatage à l'enregistrement,
   fournis par le serveur (`textDocument/formatting`) ; réglage

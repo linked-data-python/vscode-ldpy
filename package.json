@@ -23,7 +23,7 @@
 		"ldpy"
 	],
 	"publisher": "MaximeLefrancois",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"main": "./out/extension.js",
 	"engines": {
 		"vscode": "^1.75.0"
@@ -166,6 +166,24 @@
 				"command": "ldpy.formatWorkspace",
 				"title": "Format All .ldpy Files in Workspace",
 				"category": "ldpy"
+			},
+			{
+				"command": "ldpy.setup",
+				"title": "Set Up the Python Environment",
+				"category": "ldpy",
+				"icon": "$(tools)"
+			},
+			{
+				"command": "ldpy.refresh",
+				"title": "Check the Python Package Again",
+				"category": "ldpy",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "ldpy.installPackage",
+				"title": "Install or Update the linked-data-python Package",
+				"category": "ldpy",
+				"icon": "$(cloud-download)"
 			},
 			{
 				"command": "ldpy.restartServer",
@@ -313,7 +331,7 @@
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"generate": "node syntaxes/generate.js",
-		"test": "node test/parity.js && node test/contributes.js",
+		"test": "node test/parity.js && node test/contributes.js && node test/journeys.js",
 		"lint": "tsc -p ./ --noEmit",
 		"package": "npx --yes @vscode/vsce package",
 		"publish": "npx --yes @vscode/vsce publish",

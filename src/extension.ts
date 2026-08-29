@@ -28,26 +28,39 @@ import * as vscode from 'vscode';
 import {
     LanguageClient, LanguageClientOptions, ServerOptions
 } from 'vscode-languageclient/node';
+import {
+    actions, classify, commandFor, DebugRule, explain, Findings, LdpyProbe,
+    setupMenu, shouldReprobeOnFocus, State, statusView,
+} from './state';
 
 let client: LanguageClient | undefined;
 let status: vscode.StatusBarItem | undefined;
 let output: vscode.OutputChannel | undefined;
+/** The activation context: a singleton, so it is kept rather than threaded
+ *  through every signature that only needs it to register a disposable. */
+let extensionContext: vscode.ExtensionContext | undefined;
 /** Vrai pendant qu'on remplace des points d'arrêt (anti-réentrance). */
 let snapping = false;
 
+/** Last known state of the language, and what the probes found. */
+let current: { state: State; findings: Findings } | undefined;
+
 /**
- * « Quel interpréteur ? » est la première question quand rien ne marche —
- * l'extension la répond en permanence plutôt qu'à la demande. Un clic ouvre
- * le réglage.
+ * "Which interpreter?" is the first question when nothing works — the
+ * extension answers it permanently rather than on demand. What clicking does
+ * depends on the state: choose an interpreter when all is well, fix the
+ * problem when it is not (src/state.ts).
  */
-function showStatus(text: string, tooltip: string, warn = false) {
+function showStatus(state: State, findings: Findings) {
+    current = { state, findings };
     if (!status) { return; }
-    status.text = `$(circuit-board) ldpy: ${text}`;
-    status.tooltip = tooltip;
-    status.backgroundColor = warn
+    const view = statusView(state, findings);
+    status.text = `$(circuit-board) ldpy: ${view.text}`;
+    status.tooltip = view.tooltip;
+    status.backgroundColor = view.warn
         ? new vscode.ThemeColor('statusBarItem.warningBackground')
         : undefined;
-    status.command = 'ldpy.selectInterpreter';
+    status.command = view.command;
 }
 
 function updateStatusVisibility(editor?: vscode.TextEditor) {
@@ -87,16 +100,6 @@ async function resolvePython(): Promise<string> {
     return process.platform === 'win32' ? 'python' : 'python3';
 }
 
-/** Ce que `python -m ldpy.debug --probe` rapporte sur un interpréteur. */
-interface LdpyProbe {
-    package: string;
-    version: string | null;
-    python: string;
-    rules: { justMyCode: DebugRule[]; all: DebugRule[] };
-}
-
-interface DebugRule { path: string; include: boolean; }
-
 /**
  * Interroge l'interpréteur : le paquet ldpy est-il là, et avec quelles règles
  * de pas ? Un seul processus remplace l'ancien `import ldpy`, et la politique
@@ -122,33 +125,43 @@ function ldpyImportable(python: string): Promise<boolean> {
     });
 }
 
-/**
- * Dit ce qui manque, précisément. « Paquet introuvable » quand le paquet est
- * là mais trop vieux est un message qui fait perdre une demi-heure.
- */
-async function explainMissingLdpy(python: string): Promise<string> {
-    if (await ldpyImportable(python)) {
-        return `ldpy : le paquet installé pour « ${python} » est antérieur à ` +
-            "cette extension (pas de `ldpy.debug --probe`). " +
-            'Mettre à jour : pip install -U "linked-data-python[lsp,debug,format]".';
-    }
-    return `ldpy : paquet introuvable pour « ${python} ». ` +
-        'Installer linked-data-python dans cet environnement ' +
-        '(pip install "linked-data-python[lsp,debug,format]") ' +
-        'ou régler ldpy.pythonPath.';
+/** Can this interpreter be run at all? Distinguishes "no Python" from
+ *  "no package", which are different problems with different fixes. */
+function pythonRuns(python: string): Promise<boolean> {
+    return new Promise((resolve) => {
+        cp.execFile(python, ['-c', 'pass'], { timeout: 20000 },
+            (err) => resolve(!err));
+    });
 }
 
-async function startClient(context: vscode.ExtensionContext) {
+/** Ask the interpreter everything we need, in one place. */
+async function probe(python: string): Promise<Findings> {
+    const p = await probeLdpy(python);
+    if (p) { return { python, importable: true, probe: p }; }
+    if (!(await pythonRuns(python))) {
+        return { python, importable: false, pythonMissing: true };
+    }
+    return { python, importable: await ldpyImportable(python) };
+}
+
+/**
+ * (Re)start the language server, whatever the previous state was.
+ *
+ * Returns the state it left the extension in. It never throws on a missing
+ * package: that is a state to display and offer a way out of, not an
+ * exception — the earlier version threw here, the client was never created,
+ * and nothing ever asked a second time.
+ */
+async function startClient(): Promise<State> {
     const { backend, lineLength } = config();
     const python = await resolvePython();
-    const probe = await probeLdpy(python);
-    if (!probe) {
-        showStatus('non installé', await explainMissingLdpy(python), true);
-        throw new Error(await explainMissingLdpy(python));
-    }
-    showStatus(probe.version ?? 'prêt',
-        `linked-data-python ${probe.version ?? '?'}\n${probe.package}\n` +
-        `interpréteur : ${python}`);
+    await client?.stop().catch(() => undefined);
+    client = undefined;
+
+    const findings = await probe(python);
+    const state = classify(findings);
+    showStatus(state, findings);
+    if (state !== 'ready') { return state; }
     const serverOptions: ServerOptions = {
         command: python,
         args: ['-m', 'ldpy.lsp', '--backend', backend,
@@ -161,7 +174,106 @@ async function startClient(context: vscode.ExtensionContext) {
     client = new LanguageClient('ldpy', 'Linked-Data Python',
         serverOptions, clientOptions);
     await client.start();
-    context.subscriptions.push({ dispose: () => client?.stop() });
+    extensionContext?.subscriptions.push({ dispose: () => client?.stop() });
+    return state;
+}
+
+/**
+ * Probe again, restart if it now works, and say what is wrong if it does not.
+ *
+ * `announce` is false for the automatic re-probes (focus, interpreter change):
+ * they must be silent when they change nothing, or the extension nags.
+ */
+async function refresh(announce = true) {
+    const before = current?.state;
+    let state: State;
+    try {
+        state = await startClient();
+    } catch (e) {
+        output?.appendLine(`ldpy: ${(e as Error).message}`);
+        state = current?.state ?? 'missing';
+    }
+    if (state === 'ready') {
+        if (before && before !== 'ready') {
+            vscode.window.setStatusBarMessage('$(check) ldpy is ready', 4000);
+        }
+        return;
+    }
+    if (!announce && before === state) { return; }
+    const f = current!.findings;
+    const choice = await vscode.window.showWarningMessage(
+        explain(state, f), ...actions(state));
+    const command = choice && commandFor(choice);
+    if (command) { await vscode.commands.executeCommand(command); }
+}
+
+/**
+ * What clicking the status bar opens when something is wrong.
+ *
+ * Installing on a single click would decide for the user which interpreter
+ * receives the package — and getting that wrong is the very thing the status
+ * bar is signalling. So: install here, or go and pick somewhere else first.
+ * After picking, we probe again and re-open this menu if it is still broken,
+ * which is how "select an interpreter AND install into it" reads as one
+ * gesture rather than two disconnected ones.
+ */
+async function setup(reopened = false) {
+    if (!current) { await refresh(false); }
+    if (!current) { return; }
+    const { state, findings } = current;
+    const items = setupMenu(state, findings).map((c) => ({
+        label: c.label, detail: c.detail, command: c.command,
+    }));
+    const pick = await vscode.window.showQuickPick(items, {
+        title: `ldpy — ${statusView(state, findings).text}`,
+        placeHolder: findings.python,
+        matchOnDetail: true,
+    });
+    if (!pick) { return; }
+    await vscode.commands.executeCommand(pick.command);
+    if (pick.command === 'ldpy.selectInterpreter' && !reopened) {
+        // The interpreter change arrives asynchronously through the Python
+        // extension; probe once it has settled, and come back here if the
+        // new environment is no better off.
+        await new Promise((r) => setTimeout(r, 600));
+        await refresh(false);
+        if (current && current.state !== 'ready') { await setup(true); }
+    }
+}
+
+/**
+ * Install or update the package, in the selected interpreter, ON REQUEST.
+ *
+ * Never silently: the interpreter belongs to the user, and an extension that
+ * writes into it unasked is an extension one uninstalls. The output goes to
+ * our channel so a failure is readable instead of vanishing.
+ */
+async function installPackage() {
+    const python = await resolvePython();
+    const spec = 'linked-data-python[lsp,debug,format]';
+    const ok = await vscode.window.showInformationMessage(
+        `Install or update ${spec} in "${python}"?`,
+        { modal: true }, 'Install');
+    if (ok !== 'Install') { return; }
+    output?.appendLine(`ldpy: ${python} -m pip install -U "${spec}"`);
+    const done = await vscode.window.withProgress({
+        location: vscode.ProgressLocation.Notification,
+        title: 'ldpy: installing linked-data-python…',
+    }, () => new Promise<boolean>((resolve) => {
+        cp.execFile(python, ['-m', 'pip', 'install', '-U', spec],
+            { timeout: 300000 }, (err, stdout, stderr) => {
+                output?.appendLine(stdout || '');
+                if (err) { output?.appendLine(stderr || String(err)); }
+                resolve(!err);
+            });
+    }));
+    if (!done) {
+        const see = await vscode.window.showErrorMessage(
+            'ldpy: the installation failed.', 'Show log');
+        if (see) { output?.show(true); }
+        return;
+    }
+    await refresh();
 }
 
 // ----------------------------------------------------------------- débogage
@@ -218,11 +330,13 @@ class LdpyDebugConfigurationProvider
         }
 
         const python = cfg.python ?? await resolvePython();
-        const probe = await probeLdpy(python);
-        if (!probe) {
-            vscode.window.showErrorMessage(await explainMissingLdpy(python));
+        const found = await probe(python);
+        if (!found.probe) {
+            void refresh(true);
+            vscode.window.showErrorMessage(explain(classify(found), found));
             return null;
         }
+        const probed = found.probe;
 
         const debugpyType = vscode.extensions.getExtension('ms-python.debugpy')
             ? 'debugpy' : 'python';
@@ -235,7 +349,7 @@ class LdpyDebugConfigurationProvider
         // trames de plomberie. Une configuration peut les remplacer.
         const justMyCode = cfg.justMyCode ?? true;
         const rules: DebugRule[] = cfg.rules
-            ?? (justMyCode ? probe.rules.justMyCode : probe.rules.all);
+            ?? (justMyCode ? probed.rules.justMyCode : probed.rules.all);
         // On démarre nous-mêmes la session Python équivalente, puis on
         // annule silencieusement la session « ldpy » (retour null) : c'est
         // le schéma supporté pour déléguer à un autre débogueur.
@@ -394,8 +508,12 @@ async function showShadow() {
     const { buildDir } = config();
     try {
         const info = await shadowInfo(await resolvePython(), file, buildDir);
+        // Older packages answered with a path relative to the working
+        // directory we passed; `Uri.file` would root it at "/".
+        const shadow = path.isAbsolute(info.shadow) ? info.shadow
+            : path.resolve(path.dirname(file), info.shadow);
         const doc = await vscode.workspace.openTextDocument(
-            vscode.Uri.file(info.shadow));
+            vscode.Uri.file(shadow));
         await vscode.window.showTextDocument(doc, vscode.ViewColumn.Beside);
     } catch (e) {
         vscode.window.showErrorMessage(`ldpy : ${(e as Error).message}`);
@@ -413,7 +531,28 @@ async function runCurrentFile() {
     term.sendText(`${python} -m ldpy "${editor.document.uri.fsPath}"`);
 }
 
+/**
+ * Watch the Python extension's interpreter.
+ *
+ * Choosing an interpreter is not a change to OUR settings, so
+ * `onDidChangeConfiguration` never hears about it — yet it is the most common
+ * way out of "not installed", and the extension used to ignore it.
+ */
+async function watchPythonInterpreter(): Promise<vscode.Disposable | undefined> {
+    try {
+        const ext = vscode.extensions.getExtension('ms-python.python');
+        if (!ext) { return undefined; }
+        if (!ext.isActive) { await ext.activate(); }
+        const envs = ext.exports?.environments;
+        return envs?.onDidChangeActiveEnvironmentPath?.(
+            () => { void refresh(false); });
+    } catch {
+        return undefined;                       // no Python extension: fine
+    }
+}
+
 export async function activate(context: vscode.ExtensionContext) {
+    extensionContext = context;
     const provider = new LdpyDebugConfigurationProvider();
     output = vscode.window.createOutputChannel('ldpy');
     status = vscode.window.createStatusBarItem(
@@ -432,18 +571,25 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand('ldpy.openDocumentation',
             () => vscode.env.openExternal(vscode.Uri.parse(
                 'https://linked-data-python.readthedocs.io/'))),
-        vscode.commands.registerCommand('ldpy.restartServer', async () => {
-            await client?.stop();
-            await startClient(context);
-        }),
-        // Les réglages du serveur sont passés à son démarrage : les changer
-        // demande un redémarrage, qu'on fait ici plutôt que de le demander.
+        vscode.commands.registerCommand('ldpy.restartServer',
+            () => refresh(true)),
+        vscode.commands.registerCommand('ldpy.refresh', () => refresh(true)),
+        vscode.commands.registerCommand('ldpy.installPackage', installPackage),
+        vscode.commands.registerCommand('ldpy.setup', () => setup()),
+        // Server settings are passed at startup: changing one asks for a
+        // restart, which we do here rather than ask the user to do.
         vscode.workspace.onDidChangeConfiguration(async (e) => {
             if (e.affectsConfiguration('ldpy.backend')
                 || e.affectsConfiguration('ldpy.lineLength')
                 || e.affectsConfiguration('ldpy.pythonPath')) {
-                await client?.stop();
-                await startClient(context);
+                await refresh(false);
+            }
+        }),
+        // The journey that made this necessary: read "not installed", switch
+        // to a terminal, run pip, come back. Nothing else would tell us.
+        vscode.window.onDidChangeWindowState((w) => {
+            if (w.focused && current && shouldReprobeOnFocus(current.state)) {
+                void refresh(false);
             }
         }),
         vscode.debug.registerDebugConfigurationProvider('ldpy', provider),
@@ -452,12 +598,10 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.debug.onDidChangeBreakpoints(
             e => { void snapBreakpoints([...e.added, ...e.changed]); }),
     );
+    const watcher = await watchPythonInterpreter();
+    if (watcher) { context.subscriptions.push(watcher); }
     updateStatusVisibility();
-    try {
-        await startClient(context);
-    } catch (e) {
-        vscode.window.showWarningMessage((e as Error).message);
-    }
+    await refresh(true);
 }
 
 export function deactivate(): Thenable<void> | undefined {
