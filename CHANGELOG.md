@@ -2,6 +2,21 @@
 
 All notable changes to the "linked-data-python" extension will be documented in this file.
 
+## [0.3.0] — 2026-08-29
+
+*From this entry on, the change log is in English, like everything a third
+party reads (record pilotage/702). Earlier entries are left as they were
+written: a dated record is not rewritten after the fact.*
+
+- **A hover that explains the island under the cursor**, and answers on the
+  smallest element it can name rather than on the whole block: a signature
+  line, a short description with a link into the documentation, and the
+  generated Python formatted by `black`. Requires ldpy 0.5.0.
+- **New setting `ldpy.hover.showTranslation`** (on by default) to drop the
+  generated Python and keep the explanation. It is applied live — changing
+  it no longer restarts the language server.
+- The settings panel is now in English.
+
 ## [0.2.1] — 2026-08-29
 
 - **La barre d'état ne reste plus bloquée sur « non installé ».** Elle sondait

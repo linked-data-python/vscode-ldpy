@@ -23,7 +23,7 @@
 		"ldpy"
 	],
 	"publisher": "MaximeLefrancois",
-	"version": "0.2.1",
+	"version": "0.3.0",
 	"main": "./out/extension.js",
 	"engines": {
 		"vscode": "^1.75.0"
@@ -213,7 +213,7 @@
 					"type": "string",
 					"default": "",
 					"scope": "machine-overridable",
-					"markdownDescription": "Interpréteur Python qui porte le paquet `linked-data-python` (serveur de langage, exécution, débogage, formatage). **Vide** = celui de l'extension Python, sinon `python3`. Un chemin absolu ne se synchronise pas entre machines."
+					"markdownDescription": "Python interpreter carrying the `linked-data-python` package (language server, run, debug, format). **Empty** = the one the Python extension is using, else `python3`. An absolute path does not synchronise across machines."
 				},
 				"ldpy.backend": {
 					"type": "string",
@@ -222,18 +222,18 @@
 						"none"
 					],
 					"enumDescriptions": [
-						"Délègue complétion, définition et références à python-lsp-server.",
-						"Couche native seule : diagnostics et coloration des îlots."
+						"Delegates completion, definition and references to python-lsp-server.",
+						"Native layer only: island diagnostics and colouring."
 					],
 					"default": "pylsp",
 					"scope": "window",
-					"description": "Serveur de langage Python auquel déléguer les questions qui portent sur le Python (request forwarding)."
+					"description": "Python language server to delegate Python questions to (request forwarding)."
 				},
 				"ldpy.buildDirectory": {
 					"type": "string",
 					"default": ".ldpy-build",
 					"scope": "resource",
-					"description": "Répertoire des fichiers Python générés (« Show Transpiled Python », ldpy build)."
+					"description": "Directory for the generated Python files (\"Show Transpiled Python\", ldpy build)."
 				},
 				"ldpy.lineLength": {
 					"type": "number",
@@ -241,7 +241,13 @@
 					"minimum": 40,
 					"maximum": 320,
 					"scope": "resource",
-					"markdownDescription": "Longueur de ligne du formateur. Nécessite `pip install \"linked-data-python[format]\"`."
+					"markdownDescription": "Formatter line length. Requires `pip install \"linked-data-python[format]\"`."
+				},
+				"ldpy.hover.showTranslation": {
+					"type": "boolean",
+					"default": true,
+					"scope": "resource",
+					"markdownDescription": "Show the generated Python at the bottom of the hover panel, formatted by `black`. Turn it off to keep only the signature and the description of the island under the cursor."
 				},
 				"ldpy.trace.server": {
 					"type": "string",
@@ -252,7 +258,7 @@
 					],
 					"default": "off",
 					"scope": "window",
-					"description": "Trace les échanges avec le serveur de langage dans le canal « ldpy » — à activer pour un rapport de bug, pas au quotidien."
+					"description": "Traces the exchanges with the language server in the \"ldpy\" output channel — for a bug report, not for everyday use."
 				}
 			}
 		},

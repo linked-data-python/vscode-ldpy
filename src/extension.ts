@@ -74,6 +74,7 @@ function config() {
         backend: c.get<string>('backend', 'pylsp'),
         buildDir: c.get<string>('buildDirectory', '.ldpy-build'),
         lineLength: c.get<number>('lineLength', 88),
+        hoverTranslation: c.get<boolean>('hover.showTranslation', true),
     };
 }
 
@@ -153,7 +154,7 @@ async function probe(python: string): Promise<Findings> {
  * and nothing ever asked a second time.
  */
 async function startClient(): Promise<State> {
-    const { backend, lineLength } = config();
+    const { backend, lineLength, hoverTranslation } = config();
     const python = await resolvePython();
     await client?.stop().catch(() => undefined);
     client = undefined;
@@ -170,6 +171,14 @@ async function startClient(): Promise<State> {
     const clientOptions: LanguageClientOptions = {
         documentSelector: [{ language: 'ldpy' }],
         outputChannel: output,
+        // Read at startup by a client that never sends didChangeConfiguration,
+        // and kept live by `synchronize` for the one that does. A hover flag
+        // does not deserve a server restart: the setting changes how the NEXT
+        // hover renders, and nothing else (record vscode/108).
+        initializationOptions: {
+            hover: { showTranslation: hoverTranslation },
+        },
+        synchronize: { configurationSection: 'ldpy' },
     };
     client = new LanguageClient('ldpy', 'Linked-Data Python',
         serverOptions, clientOptions);
