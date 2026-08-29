@@ -98,20 +98,47 @@ jobs:
             extension.vsix
             packaged-files.txt
 
+      # A release where one marketplace succeeds and the other fails must be
+      # RESUMABLE: re-running must not stumble on the half already done. So
+      # each marketplace is asked what it already has, and skips itself if it
+      # holds this version. Skipping is announced, never silent.
+      - name: Ask each marketplace what it already has
+        id: state
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          id="$(node -p "const p=require('./package.json'); p.publisher+'.'+p.name")"
+          ns="$(node -p "require('./package.json').publisher")"
+          name="$(node -p "require('./package.json').name")"
+          vsce_live="$(npx --yes @vscode/vsce show "$id" --json 2>/dev/null \
+            | node -p "try{JSON.parse(require('fs').readFileSync(0,'utf8')).versions[0].version}catch(e){''}" || true)"
+          ovsx_live="$(curl -sf "https://open-vsx.org/api/$ns/$name" \
+            | node -p "try{JSON.parse(require('fs').readFileSync(0,'utf8')).version}catch(e){''}" || true)"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "vsce_done=$([ "$vsce_live" = "$version" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "ovsx_done=$([ "$ovsx_live" = "$version" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "publishing $version — marketplace has '${vsce_live:-nothing}', open vsx has '${ovsx_live:-nothing}'"
+
       - name: Publish to the Visual Studio Marketplace
         if: >
-          env.VSCE_PAT != '' &&
+          env.VSCE_PAT != '' && steps.state.outputs.vsce_done == 'false' &&
           (startsWith(github.ref, 'refs/tags/v') || inputs.publish)
         run: npx --yes @vscode/vsce publish --packagePath extension.vsix
 
+      # Open VSX needs the namespace to exist before a first publish, and
+      # creating it is a one-off that answers "already exists" ever after.
       - name: Publish to Open VSX
         if: >
-          env.OVSX_PAT != '' &&
+          env.OVSX_PAT != '' && steps.state.outputs.ovsx_done == 'false' &&
           (startsWith(github.ref, 'refs/tags/v') || inputs.publish)
-        run: npx --yes ovsx publish extension.vsix
+        run: |
+          npx --yes ovsx create-namespace "$(node -p "require('./package.json').publisher")" \
+            || echo "namespace already exists"
+          npx --yes ovsx publish extension.vsix
 
+      # Runs even if a marketplace failed: the artefact is worth keeping, and
+      # a half-done release is exactly when one wants the .vsix at hand.
       - name: Attach the .vsix to the release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: ${{ !cancelled() && startsWith(github.ref, 'refs/tags/v') }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
