@@ -10,14 +10,16 @@ l'extension `MaximeLefrancois.linked-data-python` ont été publiés en 2022.
 On reprend cette identité, on n'en crée pas une autre — l'`__metadata.id` du
 `package.json` est celui de l'extension publiée.
 
-## 0. Avant tout : ce qui n'est pas encore fait
+## 0. Ce qui est déjà fait, et ce qui reste
 
-Le dépôt `vscode-ldpy` **n'a jamais été poussé** sur son remote
-GitHub. Le champ `repository` du `package.json` pointe vers une URL
-qui n'existe pas encore ; le premier `git push -u origin main` revient à
-Maxime. **Publier avant ce push** donne une page de marché dont les liens
-« Repository » et « Issues » sont morts. Ordre recommandé : pousser, puis
-publier.
+Le dépôt est **poussé et public** sur
+<https://github.com/linked-data-python/vscode-ldpy> depuis le 2026-08-29 ; les
+champs `repository` et `bugs` du `package.json` y pointent, si bien que les
+liens « Repository » et « Issues » de la page de marché mènent quelque part.
+
+Reste, avant la première publication : les deux jetons (§ 1), et le paquet
+`linked-data-python` sur PyPI — l'extension sans lui ne fait rien, et son
+README envoie sur `pip install`.
 
 ## 1. Une fois : les jetons
 
