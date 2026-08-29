@@ -51,7 +51,30 @@ export VSCE_PAT=…      # Visual Studio Marketplace
 export OVSX_PAT=…      # Open VSX
 ```
 
-## 2. À chaque version
+## 2. La voie automatique : une étiquette
+
+Depuis `.github/workflows/publish.yml`, publier se réduit à poser une
+étiquette dont le numéro concorde avec `package.json` :
+
+```text
+npm version minor            # met à jour package.json ET crée l'étiquette
+git push --follow-tags
+```
+
+Le workflow installe, teste (parité de grammaire, golden d'îlots, cohérence
+des contributions), vérifie que l'étiquette et `package.json` disent le même
+numéro, empaquette, publie sur les deux places de marché et attache le `.vsix`
+à la *release* GitHub.
+
+**Répétition générale sans rien publier** : onglet Actions → *Publish
+extension* → *Run workflow*, en laissant `publish` à `false`. Le `.vsix` et la
+liste de son contenu sont attachés comme artefacts.
+
+Les deux jetons vont dans *Settings → Secrets and variables → Actions* :
+`VSCE_PAT` et `OVSX_PAT` (obtention au § 1). Chacun est facultatif — un jeton
+absent saute sa place de marché, ce qui permet de n'en servir qu'une.
+
+## 3. La voie manuelle, à chaque version
 
 ```text
 npm ci                       # dépendances exactes du lock
@@ -89,7 +112,7 @@ npm run publish:ovsx         # Open VSX  (utilise $OVSX_PAT)
 commit de version et publie d'un coup. À n'utiliser que si le `CHANGELOG.md`
 est déjà écrit : la page de marché l'affiche.
 
-## 3. Recette manuelle avant publication
+## 4. Recette manuelle avant publication
 
 Ce que les tests automatiques ne voient pas — ils portent sur la grammaire,
 pas sur VS Code. À dérouler sur `demo/demo-v2.ldpy` :
@@ -112,7 +135,7 @@ pas sur VS Code. À dérouler sur `demo/demo-v2.ldpy` :
    Avec un `ldpy` ancien (sans `--probe`), le message doit dire « antérieur à
    cette extension », pas « introuvable ».
 
-## 4. Versions
+## 5. Versions
 
 L'extension et le paquet Python avancent ensemble mais ne sont pas versionnés
 ensemble. Règle : l'extension `0.2.x` exige `linked-data-python >= 0.2`
@@ -124,14 +147,13 @@ ensemble. Règle : l'extension `0.2.x` exige `linked-data-python >= 0.2`
 2. être écrite dans `README.md` § *Install* ;
 3. faire monter le **minor** de l'extension.
 
-## 5. Pré-versions et CI
+## 6. Pré-versions
 
 `vsce publish --pre-release` publie un canal séparé que les utilisateurs
 choisissent explicitement. Utile pour une grammaire remaniée.
 
-Une publication depuis l'intégration continue n'est pas branchée. Si elle
-l'était : un `job` déclenché sur tag, `VSCE_PAT`/`OVSX_PAT` en variables
-masquées et protégées, et jamais sur une branche.
+La publication continue est branchée (§ 2) : déclenchée sur étiquette, jamais
+sur une branche, jetons en secrets de dépôt.
 
 ## Ce qui n'est pas bundlé, et pourquoi
 

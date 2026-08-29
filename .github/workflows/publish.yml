@@ -1,0 +1,120 @@
+# Publish the extension to the Visual Studio Marketplace and to Open VSX.
+#
+# Trigger: pushing a `v*` tag whose number matches `package.json`. Nothing is
+# published on a push to a branch — a release is a deliberate act.
+#
+#     npm version minor      # bumps package.json and creates the tag
+#     git push --follow-tags
+#
+# Or run it by hand from the Actions tab: `publish: false` (the default) only
+# builds and attaches the .vsix, which is how you rehearse the pipeline
+# without publishing anything.
+#
+# Secrets to set in the repository (Settings -> Secrets and variables ->
+# Actions). Each is optional: a missing one skips its marketplace, so you can
+# publish to one of them alone.
+#
+#   VSCE_PAT   Visual Studio Marketplace. An Azure DevOps personal access
+#              token: dev.azure.com -> User settings -> Personal access tokens
+#              -> New token, Organization = "All accessible organizations"
+#              (a token scoped to a single organisation is rejected with an
+#              unhelpful 401), Scopes = Custom defined -> Marketplace -> Manage.
+#   OVSX_PAT   Open VSX. open-vsx.org -> log in with GitHub, sign the publisher
+#              agreement once, then Settings -> Access Tokens -> Generate.
+#
+# See PUBLISHING.md for the manual route and the release checklist.
+
+name: Publish extension
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Actually publish (otherwise only build the .vsix)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write        # attach the .vsix to the release
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # Declared on the JOB, not on the steps: a step's own `env` is not visible
+    # to that step's `if`, so a per-step declaration would make every guard
+    # below read an empty string and silently skip publishing.
+    env:
+      VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      OVSX_PAT: ${{ secrets.OVSX_PAT }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      # The island rules come from a sibling repository, pulled in as a git
+      # dependency. npm canonicalises GitHub git URLs to ssh in the lockfile,
+      # and a runner has no ssh key; this rewrite makes it use https, which
+      # needs no credentials for a public repository.
+      - name: Use https for GitHub git dependencies
+        run: git config --global url."https://github.com/".insteadOf ssh://git@github.com/
+
+      - run: npm ci
+
+      # Explicit, so a red cross points at the test rather than at packaging.
+      # `vsce package` runs them again through `vscode:prepublish`, which is
+      # what protects a manual publish; the few seconds are worth the clarity.
+      - name: Test (grammar parity, island golden, contributions)
+        run: npm test
+
+      # A tag that disagrees with package.json publishes the wrong version,
+      # and a published version number cannot be reused.
+      - name: Check the tag matches package.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::tag $GITHUB_REF_NAME says $tag, package.json says $pkg"
+            exit 1
+          fi
+          echo "version $pkg"
+
+      - name: Package
+        run: |
+          npx --yes @vscode/vsce package --out extension.vsix
+          npx --yes @vscode/vsce ls > packaged-files.txt
+          echo "--- files in the .vsix (node_modules aside) ---"
+          grep -v '^node_modules/' packaged-files.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: extension-vsix
+          path: |
+            extension.vsix
+            packaged-files.txt
+
+      - name: Publish to the Visual Studio Marketplace
+        if: >
+          env.VSCE_PAT != '' &&
+          (startsWith(github.ref, 'refs/tags/v') || inputs.publish)
+        run: npx --yes @vscode/vsce publish --packagePath extension.vsix
+
+      - name: Publish to Open VSX
+        if: >
+          env.OVSX_PAT != '' &&
+          (startsWith(github.ref, 'refs/tags/v') || inputs.publish)
+        run: npx --yes ovsx publish extension.vsix
+
+      - name: Attach the .vsix to the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" \
+            --notes "See CHANGELOG.md." --verify-tag || true
+          gh release upload "$GITHUB_REF_NAME" extension.vsix --clobber
