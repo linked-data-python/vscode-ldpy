@@ -92,6 +92,9 @@ git push --follow-tags
 **Release tag rule:** every release tag in both `ldpy` and `vscode-ldpy` must
 be named `vX.Y.Z`, matching the released version exactly. Never create a bare
 `X.Y.Z` tag: the publication workflow is triggered only by `v*` tags.
+Push each release tag in its own command. GitHub does not create tag-push
+events when more than three tags are pushed together, so a bulk tag migration
+can silently skip the publication workflow.
 
 Le workflow installe, teste (parité de grammaire, golden d'îlots, cohérence
 des contributions), vérifie que l'étiquette et `package.json` disent le même
