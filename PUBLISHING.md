@@ -89,6 +89,10 @@ npm version minor            # met à jour package.json ET crée l'étiquette
 git push --follow-tags
 ```
 
+**Release tag rule:** every release tag in both `ldpy` and `vscode-ldpy` must
+be named `vX.Y.Z`, matching the released version exactly. Never create a bare
+`X.Y.Z` tag: the publication workflow is triggered only by `v*` tags.
+
 Le workflow installe, teste (parité de grammaire, golden d'îlots, cohérence
 des contributions), vérifie que l'étiquette et `package.json` disent le même
 numéro, empaquette, publie sur les deux places de marché et attache le `.vsix`
