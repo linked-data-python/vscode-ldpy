@@ -2,6 +2,17 @@
 
 All notable changes to the "linked-data-python" extension will be documented in this file.
 
+## [0.4.0] — 2026-09-01
+
+- **A newer ldpy release is offered at startup.** Once the language server is
+  ready, the extension checks PyPI in the background. Network failures and a
+  ten-second timeout stay silent; a notification appears only when the
+  published release is newer, and its `Update` button retains the existing
+  explicit installation confirmation.
+- **TextMate alone colors ldpy syntax.** Requires ldpy 0.5.1, whose language
+  server no longer overrides the generated `highlight-ldpy` scopes with
+  coarse semantic tokens.
+
 ## [0.3.0] — 2026-08-29
 
 *From this entry on, the change log is in English, like everything a third

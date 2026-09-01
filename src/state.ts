@@ -47,6 +47,29 @@ export function classify(f: Findings): State {
     return f.importable ? 'outdated' : 'missing';
 }
 
+/** Whether a PyPI release version is newer than the installed release. */
+export function isPublishedVersionNewer(
+    installed: string, published: string): boolean {
+    const parse = (value: string) => {
+        const match = /^(\d+(?:\.\d+)*)(?:(a|b|rc)(\d+))?$/i.exec(value);
+        if (!match) { return undefined; }
+        const release = match[1].split('.').map(Number);
+        const stage = match[2] === 'a' ? 0 : match[2] === 'b' ? 1
+            : match[2] === 'rc' ? 2 : 3;
+        return { release, stage, serial: Number(match[3] ?? 0) };
+    };
+    const left = parse(installed);
+    const right = parse(published);
+    if (!left || !right) { return false; }
+    const length = Math.max(left.release.length, right.release.length);
+    for (let index = 0; index < length; index++) {
+        const delta = (right.release[index] ?? 0) - (left.release[index] ?? 0);
+        if (delta) { return delta > 0; }
+    }
+    if (right.stage !== left.stage) { return right.stage > left.stage; }
+    return right.serial > left.serial;
+}
+
 /** True while the extension cannot serve the language. */
 export function isBroken(state: State): boolean {
     return state !== 'ready';

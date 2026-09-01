@@ -140,6 +140,14 @@ check('journey: an old package is not a missing one', () => {
         'offering "Install" for an outdated package is the wrong verb');
 });
 
+check('only newer published versions offer an update', () => {
+    assert.ok(S.isPublishedVersionNewer('0.5.1', '0.5.2'));
+    assert.ok(S.isPublishedVersionNewer('0.5.1rc1', '0.5.1'));
+    assert.ok(!S.isPublishedVersionNewer('0.5.1', '0.5.1'));
+    assert.ok(!S.isPublishedVersionNewer('0.5.2', '0.5.1'));
+    assert.ok(!S.isPublishedVersionNewer('0.5.1', 'not-a-version'));
+});
+
 check('journey: no interpreter at all', () => {
     const [none] = walk(['noPython']);
     assert.strictEqual(none.text, 'no interpreter');
@@ -218,6 +226,17 @@ check('the package is never installed without asking', () => {
     const install = SRC.slice(SRC.indexOf('async function installPackage'));
     assert.ok(/showInformationMessage[\s\S]{0,200}modal: true/.test(install),
         'the interpreter belongs to the user: ask, modally, first');
+});
+
+check('a newer PyPI release is checked without blocking startup', () => {
+    assert.ok(SRC.includes('https://pypi.org/pypi/linked-data-python/json'));
+    assert.ok(/request\.setTimeout\(10000/.test(SRC),
+        'the update check must not wait indefinitely for the network');
+    assert.ok(/isPublishedVersionNewer\(installed, published\)/.test(SRC));
+    assert.ok(/choice === 'Update'.*installPackage/s.test(SRC),
+        'the published update must reuse the explicit install confirmation');
+    assert.ok(/void offerPackageUpdate\(findings\)/.test(SRC),
+        'the version check must not delay language-server startup');
 });
 
 check('the shadow path is resolved before becoming a URI', () => {

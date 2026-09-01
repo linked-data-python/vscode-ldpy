@@ -23,6 +23,7 @@
  *   actif de l'extension Python, sinon `python3`.
  */
 import * as cp from 'child_process';
+import * as https from 'https';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import {
@@ -30,7 +31,7 @@ import {
 } from 'vscode-languageclient/node';
 import {
     actions, classify, commandFor, DebugRule, explain, Findings, LdpyProbe,
-    setupMenu, shouldReprobeOnFocus, State, statusView,
+    isPublishedVersionNewer, setupMenu, shouldReprobeOnFocus, State, statusView,
 } from './state';
 
 let client: LanguageClient | undefined;
@@ -44,6 +45,51 @@ let snapping = false;
 
 /** Last known state of the language, and what the probes found. */
 let current: { state: State; findings: Findings } | undefined;
+let updateNotifiedFor: string | undefined;
+
+function latestPublishedVersion(): Promise<string | undefined> {
+    return new Promise((resolve) => {
+        const request = https.get(
+            'https://pypi.org/pypi/linked-data-python/json',
+            { headers: { 'User-Agent': 'vscode-ldpy' } }, (response) => {
+                if (response.statusCode !== 200) {
+                    response.resume();
+                    resolve(undefined);
+                    return;
+                }
+                let body = '';
+                response.setEncoding('utf8');
+                response.on('data', (chunk) => { body += chunk; });
+                response.on('end', () => {
+                    try {
+                        const version = JSON.parse(body)?.info?.version;
+                        resolve(typeof version === 'string' ? version : undefined);
+                    } catch {
+                        resolve(undefined);
+                    }
+                });
+            });
+        request.setTimeout(10000, () => {
+            request.destroy();
+            resolve(undefined);
+        });
+        request.on('error', () => resolve(undefined));
+    });
+}
+
+async function offerPackageUpdate(findings: Findings) {
+    const installed = findings.probe?.version;
+    if (!installed) { return; }
+    const published = await latestPublishedVersion();
+    if (!published || published === updateNotifiedFor
+        || !isPublishedVersionNewer(installed, published)) {
+        return;
+    }
+    updateNotifiedFor = published;
+    const choice = await vscode.window.showInformationMessage(
+        `ldpy ${published} is available (installed: ${installed}).`, 'Update');
+    if (choice === 'Update') { await installPackage(); }
+}
 
 /**
  * "Which interpreter?" is the first question when nothing works — the
@@ -184,6 +230,7 @@ async function startClient(): Promise<State> {
         serverOptions, clientOptions);
     await client.start();
     extensionContext?.subscriptions.push({ dispose: () => client?.stop() });
+    void offerPackageUpdate(findings);
     return state;
 }
 
