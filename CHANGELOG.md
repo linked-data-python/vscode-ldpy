@@ -2,6 +2,24 @@
 
 All notable changes to the "linked-data-python" extension will be documented in this file.
 
+## [0.4.1] — 2026-09-02
+
+- **F5 no longer opens `launch.json`.** The extension has no DAP adapter: it
+  translates an `ldpy` configuration into the equivalent debugpy session,
+  starts that, then cancels its own. It cancelled by returning `null`, and the
+  API reserves `null` for "cancel *and* open the underlying configuration";
+  `undefined` cancels silently. Every single F5 opened `launch.json` on top of
+  the session it had just started.
+- **The generated Python has one place, and it is the workspace.** A relative
+  `ldpy.buildDirectory` used to hang from the file's own directory, scattering
+  a `.ldpy-build/` deep inside packages. It now hangs from the workspace
+  folder of the file, mirroring its tree (`ldpy.debug --root`, ldpy 0.5.2) so
+  that `a/m.ldpy` and `b/m.ldpy` do not both claim `m.py`; an absolute path is
+  used as it is, and a file outside any workspace folder builds beside itself.
+  Debugging still materialises nothing.
+- **Resource-scoped settings are read for the file being asked about**, which
+  is what a multi-root workspace needs.
+
 ## [0.4.0] — 2026-09-01
 
 - **A newer ldpy release is offered at startup.** Once the language server is
