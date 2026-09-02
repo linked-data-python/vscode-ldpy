@@ -233,7 +233,7 @@
 					"type": "string",
 					"default": ".ldpy-build",
 					"scope": "resource",
-					"description": "Directory for the generated Python files (\"Show Transpiled Python\", ldpy build)."
+					"markdownDescription": "Directory holding the generated Python files (\"Show Transpiled Python\", ldpy build). A **relative** path hangs from the workspace folder of the file — `.ldpy-build/` at the root of the project, mirroring its tree — so the generated code stays inside the workspace and never lands next to a lone source file. An **absolute** path is used as it is. A file opened outside any workspace folder builds beside itself."
 				},
 				"ldpy.lineLength": {
 					"type": "number",

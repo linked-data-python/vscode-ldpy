@@ -244,5 +244,35 @@ check('the shadow path is resolved before becoming a URI', () => {
         'a relative path through Uri.file lands at the filesystem root');
 });
 
+check('F5 does not open launch.json', () => {
+    // DebugConfigurationProvider: returning `undefined` cancels the session
+    // silently; returning `null` cancels it AND opens launch.json. We always
+    // cancel — the real session is the debugpy one we start ourselves — so
+    // `null` here meant launch.json opened on every single F5.
+    const provider = SRC.slice(
+        SRC.indexOf('class LdpyDebugConfigurationProvider'),
+        SRC.indexOf('// --------------------------------------------------------- points'));
+    assert.ok(provider.length > 0, 'provider not found');
+    assert.ok(!/return null;/.test(provider),
+        'returning null from a debug configuration provider opens launch.json');
+    assert.ok(/await vscode\.debug\.startDebugging\([\s\S]*?return undefined;/
+        .test(provider),
+        'the delegating path must cancel silently, not open launch.json');
+});
+
+check('the generated .py has one place, and it is configurable', () => {
+    assert.ok(/function buildLocation\(/.test(SRC),
+        'where the shadow is written must be decided in one place');
+    assert.ok(/path\.isAbsolute\(buildDir\)/.test(SRC),
+        'an absolute ldpy.buildDirectory is used as it is');
+    assert.ok(/getWorkspaceFolder[\s\S]{0,400}path\.join\(folder\.uri\.fsPath, buildDir\)/
+        .test(SRC),
+        'a relative ldpy.buildDirectory hangs from the workspace folder');
+    assert.ok(/'--root', root/.test(SRC),
+        'a shared build directory must mirror the tree, or basenames collide');
+    assert.ok(/config\(editor\.document\.uri\)/.test(SRC),
+        'buildDirectory is resource-scoped: ask for THIS file');
+});
+
 console.log(failures ? `\n${failures} échec(s).` : '\nTout est vert.');
 process.exit(failures ? 1 : 0);

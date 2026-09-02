@@ -114,8 +114,10 @@ function updateStatusVisibility(editor?: vscode.TextEditor) {
     if (doc?.languageId === 'ldpy') { status?.show(); } else { status?.hide(); }
 }
 
-function config() {
-    const c = vscode.workspace.getConfiguration('ldpy');
+function config(resource?: vscode.Uri) {
+    // `buildDirectory` and `lineLength` are resource-scoped: in a multi-root
+    // workspace, the answer depends on WHICH file is being asked about.
+    const c = vscode.workspace.getConfiguration('ldpy', resource);
     return {
         backend: c.get<string>('backend', 'pylsp'),
         buildDir: c.get<string>('buildDirectory', '.ldpy-build'),
@@ -390,7 +392,7 @@ class LdpyDebugConfigurationProvider
         if (!found.probe) {
             void refresh(true);
             vscode.window.showErrorMessage(explain(classify(found), found));
-            return null;
+            return undefined;
         }
         const probed = found.probe;
 
@@ -407,8 +409,9 @@ class LdpyDebugConfigurationProvider
         const rules: DebugRule[] = cfg.rules
             ?? (justMyCode ? probed.rules.justMyCode : probed.rules.all);
         // On démarre nous-mêmes la session Python équivalente, puis on
-        // annule silencieusement la session « ldpy » (retour null) : c'est
-        // le schéma supporté pour déléguer à un autre débogueur.
+        // annule la session « ldpy ». `undefined` annule EN SILENCE ; `null`
+        // annule ET ouvre launch.json (API DebugConfigurationProvider) —
+        // c'est ce qui faisait ouvrir launch.json à chaque F5.
         await vscode.debug.startDebugging(
             folder ?? vscode.workspace.getWorkspaceFolder(
                 vscode.Uri.file(program)), {
@@ -420,7 +423,7 @@ class LdpyDebugConfigurationProvider
             cwd: cfg.cwd ?? path.dirname(program),
             env: cfg.env,
         });
-        return null;
+        return undefined;
     }
 }
 
@@ -486,12 +489,42 @@ async function snapBreakpoints(
 
 // ---------------------------------------------------------------- commandes
 
+/**
+ * Where the generated `.py` is written, for one source file.
+ *
+ * `ldpy.buildDirectory` is read as a path, and where it is anchored is the
+ * whole question (record vscode/109): an ABSOLUTE path is used as it is; a
+ * RELATIVE one hangs from the workspace folder holding the file — one build
+ * directory for the project, `.ldpy-build/` at its root, mirroring the tree
+ * (`--root`) so that `a/m.ldpy` and `b/m.ldpy` do not both claim `m.py`.
+ * Outside any workspace folder (a lone file), it hangs from the file's own
+ * directory, as it always did.
+ */
+function buildLocation(file: string, buildDir: string):
+    { out: string; root: string | undefined } {
+    if (path.isAbsolute(buildDir)) {
+        const folder = vscode.workspace.getWorkspaceFolder(
+            vscode.Uri.file(file));
+        return { out: buildDir, root: folder?.uri.fsPath };
+    }
+    const folder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(file));
+    if (folder) {
+        return {
+            out: path.join(folder.uri.fsPath, buildDir),
+            root: folder.uri.fsPath,
+        };
+    }
+    return { out: path.join(path.dirname(file), buildDir), root: undefined };
+}
+
 /** Lance `python -m ldpy.debug --breakpoints 0 ...` et rend le JSON
  * {shadow, map, breakpoints} — utilisé pour montrer le fantôme. */
 function shadowInfo(python: string, file: string, buildDir: string):
     Promise<{ shadow: string; map: string }> {
+    const { out, root } = buildLocation(file, buildDir);
     return new Promise((resolve, reject) => {
-        const args = ['-m', 'ldpy.debug', file, '-o', buildDir,
+        const args = ['-m', 'ldpy.debug', file, '-o', out,
+            ...(root ? ['--root', root] : []),
             '--breakpoints', '0'];
         cp.execFile(python, args,
             { cwd: path.dirname(file) }, (err, stdout, stderr) => {
@@ -561,7 +594,7 @@ async function showShadow() {
     if (!editor || editor.document.languageId !== 'ldpy') { return; }
     await editor.document.save();
     const file = editor.document.uri.fsPath;
-    const { buildDir } = config();
+    const { buildDir } = config(editor.document.uri);
     try {
         const info = await shadowInfo(await resolvePython(), file, buildDir);
         // Older packages answered with a path relative to the working
