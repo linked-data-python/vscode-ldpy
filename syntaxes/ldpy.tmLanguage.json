@@ -4319,6 +4319,17 @@
 					"name": "string.quoted.other.iriref.ldpy"
 				},
 				{
+					"match": "\\b(as)\\s+([A-Za-z_]\\w*)",
+					"captures": {
+						"1": {
+							"name": "keyword.control.flow.python"
+						},
+						"2": {
+							"name": "variable.other.ldpy"
+						}
+					}
+				},
+				{
 					"match": "\\.",
 					"name": "punctuation.terminator.directive.ldpy"
 				},
@@ -4355,6 +4366,17 @@
 				{
 					"match": "<[^<>\"{}|^`\\\\\\s]*>",
 					"name": "string.quoted.other.iriref.ldpy"
+				},
+				{
+					"match": "\\b(as)\\s+([A-Za-z_]\\w*)",
+					"captures": {
+						"1": {
+							"name": "keyword.control.flow.python"
+						},
+						"2": {
+							"name": "variable.other.ldpy"
+						}
+					}
 				},
 				{
 					"match": "\\.",
