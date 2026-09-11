@@ -1,0 +1,84 @@
+# Instructions for Claude — vscode-ldpy
+
+## What this is
+
+The VS Code extension for `ldpy`, an extension of Python that brings Turtle
+notation into the language's syntax. Two things matter about how it is built:
+
+- **the TextMate grammar under `syntaxes/` is generated, never edited by
+  hand** — `npm run generate` derives it from MagicPython, and `npm test`
+  checks parity with pure Python. A hand edit survives until the next
+  generation and no longer;
+- **the language server is not in this repository.** It lives in `ldpy`
+  (`ldpy/lsp/`), a thin request-forwarding server; the extension is its
+  client. Design note 101 describes it and travels with this repository all
+  the same.
+
+## Before changing anything
+
+**Read what Maxime wrote since an agent last passed, and deal with it:**
+
+```sh
+python3 steering/bin/ouvert.py --what maxime
+```
+
+It shows the uncommitted changes under `steering/` — an agent always commits,
+so whatever is loose came from him — and the commits carrying no `Claude`
+co-author. What he adds to a design note is an **instruction**: answer it in
+the note itself, and say so in the journal. Never build on top without having
+read them.
+
+## Picking work back up
+
+1. `steering/steps/` — the **most recent** file: state at the stop, and the
+   next action.
+2. `python3 steering/bin/ouvert.py` — everything still open, gathered.
+3. `steering/design/README.md` — the decisions in force.
+4. `git status && git log --oneline -5`.
+5. `npm ci && npm test` — parity of the generated grammar, the declared
+   contributions, and the user journeys. `npm run lint` type-checks without
+   emitting.
+
+## Keeping the records (mandatory, every session)
+
+`steering/` holds the decisions and the journal — its
+[README](steering/README.md) states the header format, the closed status
+vocabulary and the two rules that matter:
+
+- a **design note states today's state**, and is changed **in place**, as if
+  it had always said so — no `Révision du …` section, no discarded option
+  kept for the record, no corrected defect;
+- a **journal entry is dated and never rewritten**.
+
+`python3 steering/bin/coherence.py` must exit 0 before any commit that
+touches `steering/`. Any non-trivial choice gets a design note, before or
+just after the implementation.
+
+Design notes of the other repositories are referenced **by number, never by
+link**: `ldpy/024` is public in `ldpy/steering/design/`, `corpus/402` is in
+the private steering repository.
+
+## Language
+
+**Everything a third party can read is in English**: code (comments, test
+names, error messages), documentation, configuration, the strings VS Code
+shows the user — command titles, setting descriptions, notifications. **The
+design notes and the journal stay in French** — internal reasoning, not the
+product — and so do commit messages, for now.
+
+## Working rules
+
+- Every feature arrives **with its tests**; the suite stays green at each
+  commit. `test/parity.js` is the one that catches a grammar edited by hand.
+- A contribution declared in `package.json` and not implemented — or the
+  reverse — is what `test/contributes.js` exists to refuse.
+- Atomic commits, in French, signed
+  `Co-Authored-By: Claude <noreply@anthropic.com>`.
+
+## What does not push itself
+
+This repository is public on GitHub (`origin`) and a `vX.Y.Z` tag triggers
+publication to the Visual Studio Marketplace and to Open VSX — so a tag is a
+deliberate act, never a step in a routine. `npm version minor` bumps
+`package.json` and creates the tag; the release notes go in `CHANGELOG.md`
+first.
