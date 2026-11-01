@@ -1,6 +1,6 @@
 # 106 — L'environnement Python est un état, pas une exception
 
-**Date** : 2026-09-03 · **Statut** : implémenté
+**Date** : 2026-11-01 · **Statut** : implémenté
 
 ## Le défaut évité, et sa cause
 
@@ -50,6 +50,21 @@ Et l'enchaînement compte : après avoir choisi un interpréteur, on resonde, et
 **le menu revient** si le nouveau n'est pas mieux loti. « Choisir un
 interpréteur puis y installer » est ainsi un geste, pas deux gestes
 déconnectés.
+
+### La sonde demande ce que verra le serveur
+
+Sonde, test d'import, `pip` et serveur de langage tournent tous dans le
+dossier de l'extension (`neutralCwd`), jamais dans la racine de l'espace de
+travail, où le client de langage démarre son serveur par défaut. `python -m`
+met son répertoire de travail en tête de `sys.path` : un espace de travail
+qui contient un dossier `ldpy` — le dépôt, cloné à côté du projet qui s'en
+sert — fait trouver ce dossier, paquet-espace de noms sans `__init__.py`,
+avant une installation éditable, dont le crochet d'import passe après la
+recherche dans `sys.path`. Le serveur tombait alors cinq fois sur
+`cannot import name '__version__' from 'ldpy'` pendant que la sonde, lancée
+ailleurs, répondait « prêt ». Aucun de ces processus ne lit son répertoire
+de travail ; le programme que l'utilisateur exécute ou débogue garde le
+sien.
 
 ### On installe sur accord explicite, jamais en silence
 

@@ -215,6 +215,23 @@ check('the extension listens for what makes a broken state recoverable', () => {
         'choosing an interpreter is not a change to OUR settings');
 });
 
+check('the probe and the server run where the workspace cannot shadow ldpy', () => {
+    // A workspace holding a folder named `ldpy` (the repository, cloned
+    // beside a project) made `python -m ldpy.lsp`, started in the workspace
+    // root, import that folder: the server crashed five times while the
+    // probe, run elsewhere, said "ready".
+    const start = SRC.slice(SRC.indexOf('async function startClient'),
+        SRC.indexOf('async function refresh'));
+    assert.ok(/options: \{ cwd: neutralCwd\(\) \}/.test(start),
+        'the language server must not start in the workspace root');
+    for (const call of SRC.match(/cp\.execFile\(python, \[[^\]]*\][^)]*\)/g)) {
+        if (/'-m', 'ldpy\.|'-c'|'pip'/.test(call)) {
+            assert.ok(/cwd: neutralCwd\(\)/.test(call),
+                `the probe must run where the server runs: ${call}`);
+        }
+    }
+});
+
 check('a missing package is a state, never a thrown exception', () => {
     const start = SRC.slice(SRC.indexOf('async function startClient'),
         SRC.indexOf('async function refresh'));

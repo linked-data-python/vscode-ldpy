@@ -24,6 +24,7 @@
  */
 import * as cp from 'child_process';
 import * as https from 'https';
+import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import {
@@ -46,6 +47,24 @@ let snapping = false;
 /** Last known state of the language, and what the probes found. */
 let current: { state: State; findings: Findings } | undefined;
 let updateNotifiedFor: string | undefined;
+
+/**
+ * The directory every Python process of the extension runs in.
+ *
+ * `python -m` puts its working directory first on `sys.path`. Run from a
+ * workspace that holds a folder named `ldpy` — the ldpy repository itself,
+ * cloned beside the project that uses it — `import ldpy` finds that folder,
+ * a namespace package without `__init__.py`, instead of an editable install
+ * (whose import hook comes after the path search). The language client
+ * starts its server in the workspace root by default: the server crashed on
+ * `cannot import name '__version__' from 'ldpy'`, while the probe, run from
+ * elsewhere, had answered "ready". None of these processes reads its working
+ * directory, so all of them run here: the probe then tests what the server
+ * will see. The program the user runs or debugs keeps its own directory.
+ */
+function neutralCwd(): string {
+    return extensionContext?.extensionPath ?? os.tmpdir();
+}
 
 function latestPublishedVersion(): Promise<string | undefined> {
     return new Promise((resolve) => {
@@ -158,7 +177,7 @@ async function resolvePython(): Promise<string> {
 function probeLdpy(python: string): Promise<LdpyProbe | undefined> {
     return new Promise((resolve) => {
         cp.execFile(python, ['-m', 'ldpy.debug', '--probe'],
-            { timeout: 20000 }, (err, stdout) => {
+            { timeout: 20000, cwd: neutralCwd() }, (err, stdout) => {
                 if (err) { resolve(undefined); return; }
                 try { resolve(JSON.parse(stdout) as LdpyProbe); }
                 catch { resolve(undefined); }
@@ -170,7 +189,7 @@ function probeLdpy(python: string): Promise<LdpyProbe | undefined> {
 function ldpyImportable(python: string): Promise<boolean> {
     return new Promise((resolve) => {
         cp.execFile(python, ['-c', 'import ldpy'],
-            { timeout: 20000 }, (err) => resolve(!err));
+            { timeout: 20000, cwd: neutralCwd() }, (err) => resolve(!err));
     });
 }
 
@@ -178,8 +197,8 @@ function ldpyImportable(python: string): Promise<boolean> {
  *  "no package", which are different problems with different fixes. */
 function pythonRuns(python: string): Promise<boolean> {
     return new Promise((resolve) => {
-        cp.execFile(python, ['-c', 'pass'], { timeout: 20000 },
-            (err) => resolve(!err));
+        cp.execFile(python, ['-c', 'pass'],
+            { timeout: 20000, cwd: neutralCwd() }, (err) => resolve(!err));
     });
 }
 
@@ -215,6 +234,8 @@ async function startClient(): Promise<State> {
         command: python,
         args: ['-m', 'ldpy.lsp', '--backend', backend,
             '--line-length', String(lineLength)],
+        // not the workspace root, the client's default: see neutralCwd
+        options: { cwd: neutralCwd() },
     };
     const clientOptions: LanguageClientOptions = {
         documentSelector: [{ language: 'ldpy' }],
@@ -319,7 +340,7 @@ async function installPackage() {
         title: 'ldpy: installing linked-data-python…',
     }, () => new Promise<boolean>((resolve) => {
         cp.execFile(python, ['-m', 'pip', 'install', '-U', spec],
-            { timeout: 300000 }, (err, stdout, stderr) => {
+            { timeout: 300000, cwd: neutralCwd() }, (err, stdout, stderr) => {
                 output?.appendLine(stdout || '');
                 if (err) { output?.appendLine(stderr || String(err)); }
                 resolve(!err);
