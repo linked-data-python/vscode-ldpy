@@ -2,6 +2,20 @@
 
 All notable changes to the "linked-data-python" extension will be documented in this file.
 
+## [0.4.2] — 2026-11-01
+
+- **The language server no longer crashes in a workspace that holds a
+  folder named `ldpy`.** The language client started the server in the
+  workspace root, and `python -m` puts its working directory first on
+  `sys.path`: with the ldpy repository cloned beside a project, `import ldpy`
+  found that folder — a namespace package — instead of an editable install,
+  and the server died five times on `cannot import name '__version__'`,
+  taking formatting with it. The probe, run from elsewhere, had answered
+  "ready". The probe, the install command and the server now all run from
+  the extension's own folder, so the probe tests what the server will see.
+- **`@prefix … as EX` is no longer underlined as illegal.** The grammar,
+  regenerated, knows the `as` clause of a prefix declaration.
+
 ## [0.4.1] — 2026-09-02
 
 - **F5 no longer opens `launch.json`.** The extension has no DAP adapter: it
