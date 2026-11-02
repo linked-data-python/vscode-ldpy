@@ -206,9 +206,9 @@
 25:7 «=» keyword.operator.assignment.python
 25:9 «e» storage.type.sparql-expr.ldpy
 25:10 «{» punctuation.definition.sparql-expr.begin.ldpy
-25:12 «STR» support.function.sparql.ldpy
+25:12 «STR» support.function.sparql
 25:15 «(» punctuation.section.bnode.ldpy
-25:16 «?name» variable.other.sparql.ldpy
+25:16 «?name» constant.variable.sparql.turtle
 25:21 «)» punctuation.section.bnode.ldpy
 25:23 «}» punctuation.definition.sparql-expr.end.ldpy
 
@@ -360,24 +360,24 @@
 42:24 «in» keyword.control.flow.python
 42:27 «s» storage.type.sparql.ldpy
 42:28 «{» punctuation.definition.sparql.begin.ldpy
-42:30 «SELECT» keyword.control.sparql.ldpy
-42:37 «?s» variable.other.sparql.ldpy
-42:40 «WHERE» keyword.control.sparql.ldpy
+42:30 «SELECT» keyword.control.sparql
+42:37 «?s» constant.variable.sparql.turtle
+42:40 «WHERE» keyword.control.sparql
 42:46 «{» punctuation.section.group.sparql.begin.ldpy
-42:48 «?s» variable.other.sparql.ldpy
-42:51 «a» keyword.control.sparql.ldpy
+42:48 «?s» constant.variable.sparql.turtle
+42:51 «a» meta.specialPredicate.turtle keyword.control.turtle
 42:53 «{» punctuation.section.interpolation.begin.ldpy
 42:54 «cls» variable.language.special.cls.python
 42:57 «}» punctuation.section.interpolation.end.ldpy
 42:59 «.» punctuation.separator.triples.ldpy
 42:61 «{» punctuation.section.group.sparql.begin.ldpy
-42:63 «SELECT» keyword.control.sparql.ldpy
-42:70 «?s» variable.other.sparql.ldpy
-42:73 «WHERE» keyword.control.sparql.ldpy
+42:63 «SELECT» keyword.control.sparql
+42:70 «?s» constant.variable.sparql.turtle
+42:73 «WHERE» keyword.control.sparql
 42:79 «{» punctuation.section.group.sparql.begin.ldpy
-42:81 «?s» variable.other.sparql.ldpy
-42:84 «?p» variable.other.sparql.ldpy
-42:87 «?o» variable.other.sparql.ldpy
+42:81 «?s» constant.variable.sparql.turtle
+42:84 «?p» constant.variable.sparql.turtle
+42:87 «?o» constant.variable.sparql.turtle
 42:90 «}» punctuation.section.group.sparql.end.ldpy
 42:92 «}» punctuation.section.group.sparql.end.ldpy
 42:94 «}» punctuation.section.group.sparql.end.ldpy
@@ -407,9 +407,9 @@
 44:14 «hasValue» entity.name.other.pname.local.ldpy
 44:23 «e» storage.type.sparql-expr.ldpy
 44:24 «{» punctuation.definition.sparql-expr.begin.ldpy
-44:26 «?v» variable.other.sparql.ldpy
-44:28 « * » -
-44:31 «2» constant.numeric.ldpy
+44:26 «?v» constant.variable.sparql.turtle
+44:29 «*» support.class.sparql
+44:31 «2» constant.numeric.turtle
 44:33 «}» punctuation.definition.sparql-expr.end.ldpy
 44:35 «}» punctuation.definition.addremove.end.ldpy
 

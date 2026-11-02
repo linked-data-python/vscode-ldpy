@@ -1,6 +1,6 @@
 # 102 — Extension VS Code
 
-**Date** : 2026-09-03 · **Statut** : implémenté
+**Date** : 2026-11-02 · **Statut** : implémenté
 
 ## Existant
 
@@ -60,17 +60,24 @@ message actionnable.
 pour vérifier que le Python pur n'est jamais sur-coloré (`a<b>c`, `d[i:j]`,
 `{k: v}`).
 
+## L'intérieur de `s{ }` : la grammaire SPARQL du marketplace
+
+Décision de Maxime du 2026-11-02 : `s{ }` est coloré par la grammaire SPARQL
+de `stardog-union.stardog-rdf-grammars` 0.2.1 (Apache-2.0), posée sur sa
+grammaire Turtle, toutes deux vendorisées dans `highlight-ldpy/vendor/` et
+reprises par `src/textmate.js` (clés préfixées, `source.turtle` résolu sur
+place). Restent à ldpy, en tête : la règle d'interpolation `{expr}`, les
+f-IRI `f<…{expr}…>` et les groupes `{ … }` équilibrés qui reprennent le
+tout. Les scopes sont ceux de la grammaire amont (`keyword.control.sparql`,
+`constant.variable.sparql.turtle`…), golden régénéré. Les autres backends
+(highlight.js, Prism, CodeMirror, Pygments) gardent leur lexique propre.
+
 ## Ce qui reste ouvert
 
 - **tree-sitter** reste écarté pour l'instant comme alternative à TextMate
   (dépendance native, fiche 001) — à réévaluer si la coloration incrémentale
   de très gros fichiers devient un besoin.
-- **Grammaires Turtle/SPARQL existantes** (tmLanguage publiées) : possibles
-  en principe pour l'intérieur de `s{ }` et des îlots Turtle, comme
-  MagicPython l'est pour le Python. Non retenu à ce stade : il faudrait
-  vendorer et adapter les scopes, et surtout y injecter les points de
-  re-bascule `{expr}` — travail comparable à la grammaire légère actuelle,
-  qui est testée par golden. À reconsidérer si la coloration SPARQL légère se
-  révèle trop pauvre à l'usage (chemin : vendorer la grammaire SPARQL du
-  marketplace, remplacer `#ldpy-sparql-content`, garder la règle
-  d'interpolation en tête).
+- **Grammaire Turtle publiée pour les îlots Turtle** : possible comme pour
+  SPARQL (ci-dessous), non faite — la grammaire légère des îlots Turtle porte
+  des règles propres à ldpy (`{expr}`, `f<…>`, `_:{…}`, suffixes calculés)
+  plus nombreuses qu'en SPARQL.

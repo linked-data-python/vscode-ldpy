@@ -5000,6 +5000,273 @@
 				}
 			]
 		},
+		"ldpy-turtle-vendor-prefix": {
+			"name": "keyword.operator.turtle",
+			"match": "(?i:@?base|@?prefix)\\s"
+		},
+		"ldpy-turtle-vendor-iriref": {
+			"name": "entity.name.type.iriref.turtle",
+			"match": "<[^\\x20-\\x20<>\"{}|^`\\\\]*>"
+		},
+		"ldpy-turtle-vendor-prefixed-name": {
+			"name": "constant.complex.turtle",
+			"match": "(\\w*:)(\\w*)",
+			"captures": {
+				"1": {
+					"name": "storage.type.PNAME_NS.turtle"
+				},
+				"2": {
+					"name": "support.variable.PN_LOCAL.turtle"
+				}
+			}
+		},
+		"ldpy-turtle-vendor-comment": {
+			"name": "comment.line.number-sign.turtle",
+			"match": "#.*$"
+		},
+		"ldpy-turtle-vendor-special-predicate": {
+			"name": "meta.specialPredicate.turtle",
+			"match": "\\s(a)\\s",
+			"captures": {
+				"1": {
+					"name": "keyword.control.turtle"
+				}
+			}
+		},
+		"ldpy-turtle-vendor-literals": {
+			"patterns": [
+				{
+					"include": "#ldpy-turtle-vendor-string"
+				},
+				{
+					"include": "#ldpy-turtle-vendor-numeric"
+				},
+				{
+					"include": "#ldpy-turtle-vendor-boolean"
+				}
+			]
+		},
+		"ldpy-turtle-vendor-string": {
+			"patterns": [
+				{
+					"include": "#ldpy-turtle-vendor-triple-squote-string-literal"
+				},
+				{
+					"include": "#ldpy-turtle-vendor-triple-dquote-string-literal"
+				},
+				{
+					"include": "#ldpy-turtle-vendor-single-squote-string-literal"
+				},
+				{
+					"include": "#ldpy-turtle-vendor-single-dquote-string-literal"
+				},
+				{
+					"include": "#ldpy-turtle-vendor-triple-tick-string-literal"
+				}
+			]
+		},
+		"ldpy-turtle-vendor-single-squote-string-literal": {
+			"name": "string.quoted.single.turtle",
+			"begin": "'",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.turtle"
+				}
+			},
+			"end": "'",
+			"endCaptures": {
+				"1": {
+					"name": "punctuation.definition.string.end.turtle"
+				},
+				"2": {
+					"name": "invalid.illegal.newline.turtle"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#ldpy-turtle-vendor-string-character-escape"
+				}
+			]
+		},
+		"ldpy-turtle-vendor-single-dquote-string-literal": {
+			"name": "string.quoted.double.turtle",
+			"begin": "\"",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.turtle"
+				}
+			},
+			"end": "\"",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.turtle"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#ldpy-turtle-vendor-string-character-escape"
+				}
+			]
+		},
+		"ldpy-turtle-vendor-triple-squote-string-literal": {
+			"name": "string.quoted.triple.turtle",
+			"begin": "'''",
+			"end": "'''",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.turtle"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.turtle"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#ldpy-turtle-vendor-string-character-escape"
+				}
+			]
+		},
+		"ldpy-turtle-vendor-triple-dquote-string-literal": {
+			"name": "string.quoted.triple.turtle",
+			"begin": "\"\"\"",
+			"end": "\"\"\"",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.turtle"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.turtle"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#ldpy-turtle-vendor-string-character-escape"
+				}
+			]
+		},
+		"ldpy-turtle-vendor-triple-tick-string-literal": {
+			"name": "string.quoted.triple.turtle",
+			"begin": "```",
+			"end": "```",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.turtle"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.turtle"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#ldpy-turtle-vendor-string-character-escape"
+				}
+			]
+		},
+		"ldpy-turtle-vendor-string-character-escape": {
+			"name": "constant.character.escape.turtle",
+			"match": "\\\\(x\\h{2}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.|$)"
+		},
+		"ldpy-turtle-vendor-numeric": {
+			"patterns": [
+				{
+					"include": "#ldpy-turtle-vendor-integer"
+				}
+			]
+		},
+		"ldpy-turtle-vendor-integer": {
+			"name": "constant.numeric.turtle",
+			"match": "[+-]?(?:\\d+|[0-9]+\\.[0-9]*|\\.[0-9]+(?:[eE][+-]?\\d+)?)"
+		},
+		"ldpy-turtle-vendor-boolean": {
+			"name": "constant.language.sparql",
+			"match": "\\b(?i:true|false)\\b"
+		},
+		"ldpy-turtle-vendor-language-tag": {
+			"name": "meta.string-literal-language-tag.turtle",
+			"match": "@(\\w+)",
+			"captures": {
+				"1": {
+					"name": "entity.name.class.turtle"
+				}
+			}
+		},
+		"ldpy-turtle-vendor-rule-constraint": {
+			"name": "meta.rule-constraint.turtle",
+			"begin": "(rule:content) (\"\"\")",
+			"beginCaptures": {
+				"1": {
+					"patterns": [
+						{
+							"include": "#ldpy-turtle-vendor-prefixed-name"
+						}
+					]
+				},
+				"2": {
+					"name": "string.quoted.triple.turtle"
+				}
+			},
+			"end": "\"\"\"",
+			"endCaptures": {
+				"0": {
+					"name": "string.quoted.triple.turtle"
+				}
+			},
+			"patterns": [
+				{
+					"include": "source.srs"
+				}
+			]
+		},
+		"ldpy-sparql-vendor-query-keyword-operators": {
+			"name": "keyword.control.sparql",
+			"match": "\\b(?i:define|select|distinct|reduced|from|named|construct|ask|describe|where|graph|having|bind|as|filter|optional|union|order|by|group|limit|offset|values|insert data|delete data|with|delete|insert|clear|silent|default|all|create|drop|copy|move|add|to|using|service|not exists|exists|not in|in|minus|load)\\b"
+		},
+		"ldpy-sparql-vendor-functions": {
+			"name": "support.function.sparql",
+			"match": "\\b(?i:concat|regex|asc|desc|bound|isiri|isuri|isblank|isliteral|isnumeric|str|lang|datatype|sameterm|langmatches|avg|count|group_concat|separator|max|min|sample|sum|iri|uri|bnode|strdt|uuid|struuid|strlang|strlen|substr|ucase|lcase|strstarts|strends|contains|strbefore|strafter|encode_for_uri|replace|abs|round|ceil|floor|rand|now|year|month|day|hours|minutes|seconds|timezone|tz|md5|sha1|sha256|sha384|sha512|coalesce|if)\\b"
+		},
+		"ldpy-sparql-vendor-variables": {
+			"name": "constant.variable.sparql.turtle",
+			"match": "(?<!\\w)[?$]\\w+"
+		},
+		"ldpy-sparql-vendor-expression-operators": {
+			"name": "support.class.sparql",
+			"match": "(?:\\|\\||&&|=|!=|<|>|<=|>=|\\*|/|\\+|-|\\||\\^|\\?|\\!)"
+		},
+		"ldpy-turtle-vendor": {
+			"patterns": [
+				{
+					"include": "#ldpy-turtle-vendor-rule-constraint"
+				},
+				{
+					"include": "#ldpy-turtle-vendor-iriref"
+				},
+				{
+					"include": "#ldpy-turtle-vendor-prefix"
+				},
+				{
+					"include": "#ldpy-turtle-vendor-prefixed-name"
+				},
+				{
+					"include": "#ldpy-turtle-vendor-comment"
+				},
+				{
+					"include": "#ldpy-turtle-vendor-special-predicate"
+				},
+				{
+					"include": "#ldpy-turtle-vendor-literals"
+				},
+				{
+					"include": "#ldpy-turtle-vendor-language-tag"
+				}
+			]
+		},
 		"ldpy-sparql-content": {
 			"patterns": [
 				{
@@ -5025,40 +5292,7 @@
 					]
 				},
 				{
-					"match": "\\b(?i:select|construct|describe|ask|where|from|named|order|by|group|having|limit|offset|distinct|reduced|optional|union|minus|graph|service|silent|filter|bind|values|insert|delete|data|with|using|load|clear|drop|create|copy|move|add|exists|not|in|as|a)\\b",
-					"name": "keyword.control.sparql.ldpy"
-				},
-				{
-					"match": "\\b(?i:ABS|AVG|BNODE|BOUND|CEIL|COALESCE|CONCAT|CONTAINS|COUNT|DATATYPE|DAY|ENCODE_FOR_URI|FLOOR|GROUP_CONCAT|HOURS|IF|IRI|isBLANK|isIRI|isLITERAL|isNUMERIC|isURI|LANG|LANGMATCHES|LCASE|MAX|MD5|MIN|MINUTES|MONTH|NOW|RAND|REGEX|REPLACE|ROUND|sameTerm|SAMPLE|SECONDS|SEPARATOR|SHA1|SHA256|SHA384|SHA512|STR|STRAFTER|STRBEFORE|STRDT|STRENDS|STRLANG|STRLEN|STRSTARTS|STRUUID|SUBSTR|SUM|TIMEZONE|TZ|UCASE|URI|UUID|YEAR)\\b(?=\\s*\\()",
-					"name": "support.function.sparql.ldpy"
-				},
-				{
-					"include": "#ldpy-sparql-var"
-				},
-				{
-					"match": "<[^<>\"{}|^`\\\\\\s]*>",
-					"name": "string.quoted.other.iriref.ldpy"
-				},
-				{
-					"match": "([A-Za-z_]\\w*)?(:)([A-Za-z0-9_][\\w.-]*)?",
-					"captures": {
-						"1": {
-							"name": "entity.name.type.pname.prefix.ldpy"
-						},
-						"2": {
-							"name": "punctuation.separator.pname.ldpy"
-						},
-						"3": {
-							"name": "entity.name.other.pname.local.ldpy"
-						}
-					}
-				},
-				{
-					"include": "#string"
-				},
-				{
-					"match": "[+-]?\\d+(\\.\\d+)?([eE][+-]?\\d+)?",
-					"name": "constant.numeric.ldpy"
+					"include": "#ldpy-firi"
 				},
 				{
 					"begin": "\\{",
@@ -5078,6 +5312,21 @@
 							"include": "#ldpy-sparql-content"
 						}
 					]
+				},
+				{
+					"include": "#ldpy-turtle-vendor"
+				},
+				{
+					"include": "#ldpy-sparql-vendor-query-keyword-operators"
+				},
+				{
+					"include": "#ldpy-sparql-vendor-functions"
+				},
+				{
+					"include": "#ldpy-sparql-vendor-variables"
+				},
+				{
+					"include": "#ldpy-sparql-vendor-expression-operators"
 				},
 				{
 					"match": "[;,.]",
