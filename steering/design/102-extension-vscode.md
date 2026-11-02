@@ -23,9 +23,12 @@ pname/bnode volontairement ABSENTS des subscripts et dict/set — `d[i:j]`,
 caractère près avec MagicPython sur les fixtures Python pur, le golden sur
 les îlots, et la non-dérive grammaire/générateur.
 
-Divergence assumée : `f<x>y` en contexte opérande est lu f-IRI (comme le
-transpileur, R1/R3) — seul cas où un Python valide change de couleur ; déjà
-signalé « à ne pas écrire » par la fiche 002.
+Divergence à retirer : `f<x>y` en contexte opérande est lu f-IRI (comme le
+transpileur, R1/R3) — seul cas où un Python valide change de couleur, et que
+le transpileur rend en Python invalide (`URIRef('x')y`). Décision de Maxime
+du 2026-11-02 : quand une lettre, un chiffre ou `_` suit le `>`, c'est du
+Python (la comparaison `f < x > y`) — dans le transpileur, `highlight-ldpy`
+et le lexer Pygments à la fois. Pas encore fait.
 
 La grammaire couvre aussi `s{ }` (coloration SPARQL légère à accolades
 équilibrées), `m{ }` (contenu de graphe), `+{ }`/`-{ }` en tête de ligne,
@@ -73,6 +76,11 @@ tout. Les scopes sont ceux de la grammaire amont (`keyword.control.sparql`,
 (highlight.js, Prism, CodeMirror, Pygments) gardent leur lexique propre.
 
 ## Ce qui reste ouvert
+
+- **`f<x>y` lu en Python** (décision ci-dessus) : la règle dans
+  `ldpy/transpiler/core.py` (`_try_take_firi`), `highlight-ldpy`
+  (`src/islands.js`) et `ldpy/pygments_lexer.py` ; tests d'identité, de
+  parité MagicPython et golden.
 
 - **tree-sitter** reste écarté pour l'instant comme alternative à TextMate
   (dépendance native, fiche 001) — à réévaluer si la coloration incrémentale
