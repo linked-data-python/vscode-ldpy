@@ -4632,7 +4632,7 @@
 			]
 		},
 		"ldpy-firi-op": {
-			"begin": "(?:^|(?<=[=+\\-*/%,;:!|&^~(\\[{<])|(?<=\\breturn)|(?<=\\byield)|(?<=\\belse)|(?<=\\bin)|(?<=\\bis)|(?<=\\bnot)|(?<=\\band)|(?<=\\bor)|(?<=\\bif)|(?<=\\bawait))(\\s*)\\b(f)(<)(?=(?:[^<>\"|^`\\\\\\s{}]|\\{[^}]*\\})*>)",
+			"begin": "(?:^|(?<=[=+\\-*/%,;:!|&^~(\\[{<])|(?<=\\breturn)|(?<=\\byield)|(?<=\\belse)|(?<=\\bin)|(?<=\\bis)|(?<=\\bnot)|(?<=\\band)|(?<=\\bor)|(?<=\\bif)|(?<=\\bawait))(\\s*)\\b(f)(<)(?=(?:[^<>\"|^`\\\\\\s{}]|\\{[^}]*\\})*>(?![A-Za-z0-9_]))",
 			"end": ">",
 			"contentName": "string.interpolated.firi.ldpy",
 			"beginCaptures": {
@@ -4671,7 +4671,7 @@
 			]
 		},
 		"ldpy-eiri-op": {
-			"begin": "(?:^|(?<=[=+\\-*/%,;:!|&^~(\\[{<])|(?<=\\breturn)|(?<=\\byield)|(?<=\\belse)|(?<=\\bin)|(?<=\\bis)|(?<=\\bnot)|(?<=\\band)|(?<=\\bor)|(?<=\\bif)|(?<=\\bawait))(\\s*)\\b(e)(<)(?=(?:[^<>\"|^`\\\\\\s{}]|\\{[^}]*\\})*>)",
+			"begin": "(?:^|(?<=[=+\\-*/%,;:!|&^~(\\[{<])|(?<=\\breturn)|(?<=\\byield)|(?<=\\belse)|(?<=\\bin)|(?<=\\bis)|(?<=\\bnot)|(?<=\\band)|(?<=\\bor)|(?<=\\bif)|(?<=\\bawait))(\\s*)\\b(e)(<)(?=(?:[^<>\"|^`\\\\\\s{}]|\\{[^}]*\\})*>(?![A-Za-z0-9_]))",
 			"end": ">",
 			"contentName": "string.interpolated.eiri.ldpy",
 			"beginCaptures": {
@@ -4710,7 +4710,7 @@
 			]
 		},
 		"ldpy-firi": {
-			"begin": "\\b(f)(<)(?=(?:[^<>\"|^`\\\\\\s{}]|\\{[^}]*\\})*>)",
+			"begin": "\\b(f)(<)(?=(?:[^<>\"|^`\\\\\\s{}]|\\{[^}]*\\})*>(?![A-Za-z0-9_]))",
 			"end": ">",
 			"contentName": "string.interpolated.firi.ldpy",
 			"beginCaptures": {
@@ -4749,7 +4749,7 @@
 			]
 		},
 		"ldpy-eiri": {
-			"begin": "\\b(e)(<)(?=(?:[^<>\"|^`\\\\\\s{}]|\\{[^}]*\\})*>)",
+			"begin": "\\b(e)(<)(?=(?:[^<>\"|^`\\\\\\s{}]|\\{[^}]*\\})*>(?![A-Za-z0-9_]))",
 			"end": ">",
 			"contentName": "string.interpolated.eiri.ldpy",
 			"beginCaptures": {

@@ -4,6 +4,8 @@ a, b, c, d, i, j, k, v, x, y, ex, f, e, g, n = range(15)
 
 w = a<b>c                 # comparaison chaînée, pas une IRI
 w2 = f<a, b>c             # f< sans fermeture IRI : comparaisons
+w3 = f<x>y                # f<…> suivi d'un nom : comparaison chaînée
+w4 = e<x>y                # de même pour e<…>
 s = d[i:j]                # slice, pas un pname
 s2 = d[i:j:k]             # slice étendu
 s3 = d[a+b:c]             # slice avec expression
