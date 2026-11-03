@@ -2,6 +2,13 @@
 
 All notable changes to the "linked-data-python" extension will be documented in this file.
 
+## [Unreleased]
+
+- **An escaped local name is coloured as one name**: `fhir:Extension\.url`,
+  `ex:a\-b` (Turtle's `\` escapes, which ldpy reads inside islands and
+  out). The `\` used to be taken for a line continuation and the rest of
+  the name marked invalid.
+
 ## [0.4.2] — 2026-11-01
 
 - **The language server no longer crashes in a workspace that holds a
